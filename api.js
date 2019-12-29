@@ -1,7 +1,7 @@
 const axios = require('axios');
 
-module.exports = async function (json) {
-    const { data } = await axios.post(`https://trit.biz/rr/${json}`);
+module.exports = async function (url) {
+    const { data } = await axios.post(url);
 
     return data;
 };
