@@ -1,7 +1,6 @@
 const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
-const global_params = require('../globals');
 
 const sql_db = new SqlDB();
 
@@ -32,7 +31,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                 ctx.session.notify_c = ctx.message.text.indexOf('да') !== -1 || ctx.message.text.indexOf('Да') !== -1;
             }
 
-            const sql = `UPDATE ${global_params.db_table} SET notify_c = ${ctx.session.notify_c} WHERE vk_id = ${ctx.message.from_id}`;
+            const sql = `UPDATE ${process.env.DB_TABLE} SET notify_c = ${ctx.session.notify_c} WHERE vk_id = ${ctx.message.from_id}`;
             sql_db.callback(sql, [], function (err) {
                 if (err) {
                     ctx.reply('Технические шоколадки, успешно устраняем.');

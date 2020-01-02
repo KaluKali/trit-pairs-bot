@@ -2,14 +2,13 @@ const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 const TritData = require('../trit_data');
-const global_params = require('../globals');
 
 const sql_db = new SqlDB();
 const trit_data = new TritData();
 
 
 function getUserInfo(vk_id) {
-    return sql_db.getData(`SELECT * FROM ${global_params.db_table} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
+    return sql_db.getData(`SELECT * FROM ${process.env.DB_TABLE} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
 }
 exports.ReverseMarkup = function (reverse_markup) {
     if (typeof reverse_markup === 'undefined'){
@@ -92,13 +91,13 @@ exports.ReverseMarkup = function (reverse_markup) {
             const user_info = await getUserInfo(ctx.message.from_id);
 
             if (typeof user_info == 'undefined') {
-                sql = `INSERT INTO ${global_params.db_table}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
+                sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
                 const values = [ctx.message.from_id, ctx.session.notify_c, ctx.session.notify_e_d, 1, ctx.session.stud_group];
                 sql_db.callback(sql, values, function (err) {
                     if (err) console.log(err);
                 });
             } else {
-                sql = `UPDATE ${global_params.db_table} SET notify_c = ${ctx.session.notify_c},notify_e_d = ${ctx.session.notify_e_d},user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
+                sql = `UPDATE ${process.env.DB_TABLE} SET notify_c = ${ctx.session.notify_c},notify_e_d = ${ctx.session.notify_e_d},user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
                 sql_db.callback(sql, [], function (err) {
                     if (err) console.log(err);
                 })

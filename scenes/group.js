@@ -2,7 +2,6 @@ const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 const TritData = require('../trit_data');
-const global_params = require('../globals');
 
 const trit_data = new TritData();
 
@@ -10,7 +9,7 @@ const sql_db = new SqlDB();
 
 
 function getUserInfo(vk_id) {
-    return sql_db.getData(`SELECT * FROM ${global_params.db_table} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
+    return sql_db.getData(`SELECT * FROM ${process.env.DB_TABLE} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
 }
 exports.ReverseMarkup = function (reverse_markup) {
     if (typeof reverse_markup === 'undefined') {
@@ -51,7 +50,7 @@ exports.ReverseMarkup = function (reverse_markup) {
 
             let sql;
             if (typeof user_info == 'undefined') {
-                sql = `INSERT INTO ${global_params.db_table}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
+                sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
                 const values = [ctx.message.from_id, 1, 1, 1, ctx.session.stud_group];
                 sql_db.callback(sql, values, function (err) {
                     if (err) {
@@ -66,7 +65,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                     ], {columns: 2}).oneTime());
                 });
             } else {
-                sql = `UPDATE ${global_params.db_table} SET user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
+                sql = `UPDATE ${process.env.DB_TABLE} SET user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
                 sql_db.callback(sql, [], function (err) {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.');

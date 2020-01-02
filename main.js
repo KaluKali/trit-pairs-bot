@@ -1,4 +1,7 @@
-﻿const VkBot = require('node-vk-bot-api');
+﻿require('dotenv').config();
+
+
+const VkBot = require('node-vk-bot-api');
 const Session = require('node-vk-bot-api/lib/session');
 const Stage = require('node-vk-bot-api/lib/stage');
 const Markup = require('node-vk-bot-api/lib/markup');
@@ -13,7 +16,6 @@ const MessageParser = require('./tools/message_parser');
 const SqlDB = require('./tools/sql_data');
 const levenshtein = require('./tools/levenshtein');
 
-const global_params = require('./globals');
 const hello_carousel = require('./carousels/carousel');
 
 const server_time = new ServerTime();
@@ -22,7 +24,7 @@ const server_time = new ServerTime();
 const sql_db = new SqlDB();
 const message_parser = new MessageParser();
 
-const bot = new VkBot("85a94a69936efb9ced87f2220a87f881ca7b221e5cfbda93a95d576673e59b98bd38250a9daf9e9561f6c");
+const bot = new VkBot(process.env.VK_API_KEY);
 
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание', 'positive'),
@@ -63,7 +65,7 @@ schedule.scheduleJob(new schedule.RecurrenceRule(
 });
 
 async function getUserInfo(vk_id) {
-    return sql_db.getData(`SELECT * FROM ${global_params.db_table} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
+    return sql_db.getData(`SELECT * FROM ${process.env.DB_TABLE} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
 }
 
 const session = new Session();

@@ -4,9 +4,7 @@ VK bot for vk.com/trit_biz
 
 ## Getting Started
 
-In sql_data.js put your authorization data's for mysql-db
-
-In global.js put your table in database
+In .env put your table name in database and data's for authorizing in mysql
 
 execute deployment.sql into mysql-db
 

@@ -3,13 +3,12 @@ const table = require('text-table');
 
 const TritData = require('../trit_data');
 const SqlDB = require('../tools/sql_data');
-const global_params = require('../globals');
 
 const trit_data = new TritData();
 const sql_db = new SqlDB();
 
 async function getUserInfo(vk_id) {
-    return sql_db.getData(`SELECT * FROM ${global_params.db_table} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
+    return sql_db.getData(`SELECT * FROM ${process.env.DB_TABLE} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
 }
 
 exports.ReverseMarkup = function (reverse_markup) {
@@ -23,7 +22,7 @@ exports.ReverseMarkup = function (reverse_markup) {
     }
 
     return async (weekday, bot)=>{
-        const sql = `SELECT vk_id FROM ${global_params.db_table}`;
+        const sql = `SELECT vk_id FROM ${process.env.DB_TABLE}`;
         sql_db.callback(sql, (err, results) => { // получаем список всех юзеров из вк
             if(err) console.log(`p_D_to_all Error: ${err}`);
             const users = [];
