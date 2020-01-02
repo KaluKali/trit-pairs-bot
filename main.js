@@ -3,27 +3,21 @@ const Session = require('node-vk-bot-api/lib/session');
 const Stage = require('node-vk-bot-api/lib/stage');
 const Markup = require('node-vk-bot-api/lib/markup');
 
+var table = require('text-table');
+var schedule = require('node-schedule');
+
 const ServerTime = require('./server_time');
 const TritData = require('./trit_data');
 const MessageParser = require('./tools/message_parser');
 // const YaSpeller = require('./tools/ya_speller');
 const SqlDB = require('./tools/sql_data');
+const levenshtein = require('./tools/levenshtein')
 
 const global_params = require('./globals');
 
 const hello_carousel = require('./carousels/carousel');
 
-const settings_scene = require('./scenes/settings');
-const group_scene = require('./scenes/group');
-const notify_c_scene = require('./scenes/notify_c');
-const notify_e_d_scene = require('./scenes/notify_e_d');
-
-
-var table = require('text-table');
-
-var schedule = require('node-schedule');
-
-// const white_list = ['расписание','найди','помощь','настроить','привет'];
+const white_list = ['расписание','найди','помощь','настроить','привет','меню','начать'];
 
 var server_time = new ServerTime();
 var trit_data = new TritData();
@@ -31,10 +25,7 @@ var trit_data = new TritData();
 var sql_db = new SqlDB();
 const message_parser = new MessageParser();
 
-
-const bot = new VkBot("your token");
-
-scheduleStart(server_time.getNowDayWeek());
+const bot = new VkBot("77c5ccdc618ed80de1493e236705be07285ecd857a520ffa92d788cc9a7ca124022c4deab258c069d62e5");
 
 const help =
     ['1.1 Для настройки уведомлений напиши мне: \n"настроить уведомления"',
@@ -58,16 +49,19 @@ const revers_menu = Markup.keyboard([
     Markup.button('Настроить уведомления', 'primary'),
     Markup.button('Указать группу', 'primary'),
 ], { columns:2 }).oneTime();
+const ctx_scenes = require('./scenes/index').Init(revers_menu);
+
+
+scheduleStart(server_time.getNowDayWeek());
+
+function scheduleStart(weekday){
+    schedule.scheduleJob('40 09 * * *', function(){
+        p_D_to_all(weekday);
+    });
+}
 
 async function getUserInfo(vk_id) {
     return sql_db.getData(`SELECT * FROM ${global_params.db_table} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
-}
-
-function scheduleStart(weekday){
-    schedule.scheduleJob('00 07 * * *', function(){
-        p_D_to_all(weekday);
-        return scheduleStart(weekday);
-    });
 }
 
 async function pairs_Day(ctx, obj){ //send pairs to people
@@ -112,12 +106,14 @@ async function find_Pairs(ctx, obj){ //send pairs to people
     const group = obj.group;
     const weekday = obj.weekday !== "" ? obj.weekday : -1
 
-    trit_data.getData(function (data) {
+    trit_data.getData((data) => {
         const fin = [];
-        TritData.ValidGroups().forEach(function (group_f, i) {
+        TritData.ValidGroups().forEach((group_f, i) => {
             for (var weekday_f in data[group_f]['weekdays']){ // data[group_f] is not iterable
-                data[group_f]['weekdays'][weekday_f].pairs.forEach(function (pair_f) {
-                    if ((pair_f.name+'').toLowerCase().indexOf(pair) + 1){
+                data[group_f]['weekdays'][weekday_f].pairs.forEach((pair_f)=> {
+                    console.log(pair_f)
+                    var pair_s = (pair_f.name+'')
+                    if (pair_s.indexOf(pair) !== -1 || levenshtein(pair_s,pair) <= 2){
                         fin.push([pair_f.name,weekday_f,group_f]);
                     }
                 });
@@ -126,17 +122,12 @@ async function find_Pairs(ctx, obj){ //send pairs to people
 
         let s_response;
 
-        if (group !== -1 && weekday !== -1){
-            s_response = fin.filter(obj_f => obj_f[2] == group && obj_f[1] == weekday);
-        } else {
-            if (group == -1 && weekday !== -1){
-                s_response = fin.filter(obj_f => obj_f[1] == weekday);
-            } else {
-                if (group !== -1 && weekday == -1){
-                    s_response = fin.filter(obj_f => obj_f[2] == group);
-                } else {
-                    s_response = fin;
-                }
+        if (group !== -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[2] == group && obj_f[1] == weekday);
+        else {
+            if (group == -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[1] == weekday);
+            else {
+                if (group !== -1 && weekday == -1) s_response = fin.filter(obj_f => obj_f[2] == group);
+                else s_response = fin;
             }
         }
 
@@ -148,13 +139,11 @@ async function find_Pairs(ctx, obj){ //send pairs to people
 
 async function p_D_to_all(weekday){
     const sql = `SELECT vk_id FROM ${global_params.db_table}`;
-    sql_db.callback(sql, function(err, results) { // получаем список всех юзеров из вк
+    sql_db.callback(sql, (err, results) => { // получаем список всех юзеров из вк
         if(err) console.log(`p_D_to_all Error: ${err}`);
         const users = [];
-        for(let i of results){
-            users.push(i.vk_id); // формируем список юзеров
-        }
-        trit_data.getData(async function (data) {
+        for(let i of results) users.push(i.vk_id); // формируем список юзеров
+        trit_data.getData(async (data) => {
             const exec_groups = [];
             const g_users = []
             for (let i of users){
@@ -164,30 +153,28 @@ async function p_D_to_all(weekday){
             }
             uniq_exec_groups = [...new Set(exec_groups)]
             // сортируем только по уникальным значениям, получая те группы которым нужно сформировать таблицу расписания
-            uniq_exec_groups.forEach(function (group) {
+            uniq_exec_groups.forEach((group) => {
                 data_day = data[group]['weekdays'][weekday]['pairs'];
                 const data_day_s = []
                 // формируем таблицу
-                data_day.forEach(function (pair,i) {
+                data_day.forEach((pair,i) => {
                     if (i < 4){
                         p = [data_day[i].name != false ? data_day[i].name : '-', data_day[i].room != false ? data_day[i].room : '-'];
                         data_day_s.push(p.slice(),p.slice());
                     }
                 });
-                data_day_s.forEach(function (elem,i) {
+                data_day_s.forEach((elem,i) => {
                     elem.push(TritData.PairsTime()[i]);
                     elem.unshift(i+1);
                 });
 
                 const t = table(data_day_s, { align: [ 'l', 'c', 'l' ], hsep: ' || ' });
                 // формируем таблицу end
-                const send_users = g_users.filter(user => user.user_group === group && user.notify === 1 && user.notify_e_d === 1);
+                var send_users = g_users.filter(user => user.user_group === group && user.notify === 1 && user.notify_e_d === 1);
                 // сортируем по группе, параметрам уведомлений которые выставлены у юзеров
                 // получая список юзеров которым нужно отправить расписание
                 const send_users_id = []
-                for (i of send_users){
-                    send_users_id.push(i.vk_id)
-                }
+                for (i of send_users) send_users_id.push(i.vk_id);
                 if (send_users_id.length !== 0){
                     bot.sendMessage(send_users_id,`Список уроков для ${group} группы на ${weekday}.\n\n${t.toString()}`,null,revers_menu);
                 }
@@ -197,7 +184,7 @@ async function p_D_to_all(weekday){
 }
 
 const session = new Session();
-const settings_stage = new Stage(settings_scene,group_scene,notify_c_scene,notify_e_d_scene);// (...stages)
+const settings_stage = new Stage(ctx_scenes[0],ctx_scenes[1],ctx_scenes[2],ctx_scenes[3]);
 bot.use(session.middleware());
 bot.use(settings_stage.middleware());
 
@@ -217,6 +204,16 @@ bot.use(settings_stage.middleware());
 // }) // YandexSpeller
 bot.use((ctx,next)=>{
     ctx.message.payload = typeof ctx.message.payload !== 'undefined' ? JSON.parse(ctx.message.payload) : [];
+
+    var message = ctx.message.text.split(' ');
+    for (let i of white_list){
+        if (levenshtein(i, message[0]) <= 2){
+            message.shift()
+            message.unshift(i)
+            ctx.message.text = message.join(' ');
+            return next();
+        }
+    }
     next();
 });
 bot.command('помощь', (ctx)=>{
@@ -251,16 +248,6 @@ bot.command('найди', (ctx)=>{
 bot.command('найти пару', (ctx)=>{
     ctx.reply([help[help.length-1],help[help.length-2],help[help.length-3],help[help.length-4]].join('\n\n'));
 });
-// bot.command('debug', async (ctx)=>{
-//      await bot.execute('messages.send', {
-//         user_id: ctx.message.from_id,
-//         message:'Возможности бота:',
-//         random_id:Math.floor(Math.random()*1000),
-//         template:JSON.stringify(hello_carousel)
-//     }).catch((res)=>{
-//         console.log(res)
-//     });
-// });
 bot.command('настроить', (ctx) => {
     const params = message_parser.parse_settings(ctx.message.text);
     if (params.change_group){
@@ -315,7 +302,7 @@ bot.on(async (ctx) => {
                         console.log(res);
                     });
                 }
-            } else return;
+            } else return ctx.reply('Выберете один из вариантов:',null,revers_menu);
         case 'setting':
             if (ctx.message.payload.button === 'notify_c') ctx.scene.enter('notify_c');
             else if (ctx.message.payload.button === 'notify_e_d') ctx.scene.enter('notify_e_d');
@@ -329,6 +316,6 @@ bot.on(async (ctx) => {
         ]
     ).oneTime())
 });
-bot.startPolling(() => {
+bot.startPolling((err) => {
     console.log('Bot started.')
 });

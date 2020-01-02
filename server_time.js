@@ -17,6 +17,9 @@ class ServerTime extends Date{
         if (typeof day != 'string') return new TypeError('Argument isValidWeekDay is string.');
         return pairs_days.indexOf(day) !== -1 ? true : false;
     }
+    static Weekdays(){
+        return pairs_days;
+    }
 
     getDay() {
         const now_day = super.getDay();

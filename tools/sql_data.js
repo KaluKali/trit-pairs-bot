@@ -9,9 +9,7 @@ const connection = mysql.createConnection({
 connection.connect(function(err){
     if (err) {
         return console.error("Ошибка подключения к MySQL: " + err.message);
-    } else {
-        console.log("MySQL connected.");
-    }
+    } else console.log("MySQL connected.");
 });
 
 var SqlDB = function(){

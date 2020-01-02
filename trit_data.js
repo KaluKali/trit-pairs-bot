@@ -15,9 +15,7 @@ const pairs_time = [
     '14:30 - 15:15',
 ];
 
-exports.Init = function () {
 
-}
 //.then(response=>yourfunc())
 class TritData {
     constructor(){}

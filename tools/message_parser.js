@@ -1,5 +1,6 @@
 const TritData = require('../trit_data');
 const ServerTime = require('../server_time');
+const levenshtein = require('../tools/levenshtein')
 
 const server_time = new ServerTime();
 
@@ -17,22 +18,25 @@ class MessageParser {
         // 1: пара
         // 2: № группы
         // 3: день недели
-        // при 1 в первом аргументе все остальные отметаются
 
-        args.forEach((param)=>{
+        args.forEach((param,i)=>{
             if (param==='на') return;
+            if (param.indexOf('групп')!== -1) return;
             if (isNaN(+param)){
                 if(ServerTime.isWeekday(param)){
-                    params.weekday = ''+param;
+                    return params.weekday = param;
                 } else {
-                    params.pair = ''+param;
-                }
+                    for (let day of ServerTime.Weekdays()){
+                        if (levenshtein(day,param) <= 2) return params.weekday = day;
+                    }
+
+                    return params.pair = `${params.pair} ${param}`;
+                };
             } else {
-                if (TritData.isGroup(+param)){
-                    params.group = +param;
-                }
+                if (TritData.isGroup(+param)) return params.group = +param;
             }
         });
+        params.pair = params.pair.trim()
         return params;
     }
     parse_pairs_day(txt){
@@ -56,6 +60,10 @@ class MessageParser {
             else if(isNaN(+param)){
                 if (ServerTime.isWeekday(param)){
                     params.weekday = ''+param;
+                } else {
+                    for (var day of ServerTime.Weekdays()){
+                        if (levenshtein(day,param) <= 2) return params.weekday = day;
+                    }
                 }
             } else {
                 if (TritData.isGroup(+param)){
