@@ -24,9 +24,9 @@ const obj = {
                 type: 'open_photo'
             },
             buttons:[
-                Markup.button('Найти пару', 'positive'),
-                Markup.button('Найти пару', 'positive'),
-                Markup.button('Найти пару', 'positive')
+                Markup.button('Поиск пары', 'positive'),
+                Markup.button('Поиск пары', 'positive'),
+                Markup.button('Поиск пары', 'positive')
             ]
         },
         {

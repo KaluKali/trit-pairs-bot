@@ -34,6 +34,7 @@ class MessageParser {
                 };
             } else {
                 if (TritData.isGroup(+param)) return params.group = +param;
+                else return params.pair = `${params.pair} ${param}`;
             }
         });
         params.pair = params.pair.trim()
