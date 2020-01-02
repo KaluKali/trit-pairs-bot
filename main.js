@@ -24,7 +24,7 @@ var server_time = new ServerTime();
 var sql_db = new SqlDB();
 const message_parser = new MessageParser();
 
-const bot = new VkBot("77c5ccdc618ed80de1493e236705be07285ecd857a520ffa92d788cc9a7ca124022c4deab258c069d62e5");
+const bot = new VkBot("put your token");
 
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание', 'positive'),
