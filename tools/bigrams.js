@@ -21,4 +21,4 @@ module.exports = function(str1,str2){
         return ((2.0*hit)/union);
     }
     return 0.0;
-}
+};

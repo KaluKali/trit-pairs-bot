@@ -1,11 +1,11 @@
 const TritData = require('../trit_data');
 const ServerTime = require('../server_time');
-const levenshtein = require('../tools/levenshtein')
+const levenshtein = require('../tools/levenshtein');
 
 const server_time = new ServerTime();
 
 class MessageParser {
-    constructor(){}
+    // constructor(){}
 
     parse2_find_arg(txt){
         const params = {pair:'',group:-1,weekday:''};
@@ -31,13 +31,13 @@ class MessageParser {
                     }
 
                     return params.pair = `${params.pair} ${param}`;
-                };
+                }
             } else {
                 if (TritData.isGroup(+param)) return params.group = +param;
                 else return params.pair = `${params.pair} ${param}`;
             }
         });
-        params.pair = params.pair.trim()
+        params.pair = params.pair.trim();
         return params;
     }
     parse_pairs_day(txt){
@@ -55,14 +55,14 @@ class MessageParser {
         args.forEach((param)=>{
             if (param==='на') return;
             else if (param==='завтра'){
-                params.weekday = server_time.getDayWeek(server_time.getDay()+1)
+                params.weekday = ServerTime.getDayWeek(server_time.getDay()+1);
                 return;
             }
             else if(isNaN(+param)){
                 if (ServerTime.isWeekday(param)){
                     params.weekday = ''+param;
                 } else {
-                    for (var day of ServerTime.Weekdays()){
+                    for (const day of ServerTime.Weekdays()){
                         if (levenshtein(day,param) <= 2) return params.weekday = day;
                     }
                 }

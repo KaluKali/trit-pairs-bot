@@ -43,5 +43,5 @@ const obj = {
             ]
         },
     ]
-}
-module.exports = obj
+};
+module.exports = obj;

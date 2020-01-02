@@ -15,7 +15,7 @@ class ServerTime extends Date{
 
     static isWeekday(day){
         if (typeof day != 'string') return new TypeError('Argument isValidWeekDay is string.');
-        return pairs_days.indexOf(day) !== -1 ? true : false;
+        return pairs_days.indexOf(day) !== -1;
     }
     static Weekdays(){
         return pairs_days;
@@ -28,7 +28,7 @@ class ServerTime extends Date{
     getNowDayWeek(){
         return pairs_days[this.getDay()];
     }
-    getDayWeek(day){
+    static getDayWeek(day){
         if (typeof day !== 'number') return new TypeError('getDayWeek: mistake argument type');
         if (day < 7){
             return pairs_days[day];

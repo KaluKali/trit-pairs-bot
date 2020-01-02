@@ -1,19 +1,19 @@
 module.exports = function levenshtein(s1, s2, costs) {
-    var i, j, m, n, flip, ch, chl, ii, ii2, cost, cutHalf;
+    let i, j, m, n, flip, ch, chl, ii, ii2, cost, cutHalf;
     m = s1.length;
     n = s2.length;
     costs = costs || {};
-    var cr = costs.replace || 1;
-    var cri = costs.replaceCase || costs.replace || 1;
-    var ci = costs.insert || 1;
-    var cd = costs.remove || 1;
+    const cr = costs.replace || 1;
+    const cri = costs.replaceCase || costs.replace || 1;
+    const ci = costs.insert || 1;
+    const cd = costs.remove || 1;
 
     cutHalf = flip = Math.max(m, n);
 
-    var minCost = Math.min(cd, ci, cr);
-    var minD = Math.max(minCost, (m - n) * cd);
-    var minI = Math.max(minCost, (n - m) * ci);
-    var buf = new Array((cutHalf * 2) - 1);
+    const minCost = Math.min(cd, ci, cr);
+    const minD = Math.max(minCost, (m - n) * cd);
+    const minI = Math.max(minCost, (n - m) * ci);
+    const buf = new Array((cutHalf * 2) - 1);
 
     for (i = 0; i <= n; ++i) {
         buf[i] = i * minD;
@@ -34,4 +34,4 @@ module.exports = function levenshtein(s1, s2, costs) {
         }
     }
     return buf[n + cutHalf - flip];
-}
+};

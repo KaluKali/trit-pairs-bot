@@ -1,9 +1,9 @@
 const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
-const global_params = require('../globals')
+const global_params = require('../globals');
 
-var sql_db = new SqlDB();
+const sql_db = new SqlDB();
 
 exports.ReverseMarkup = function (reverse_markup) {
     if (typeof reverse_markup === 'undefined') {
@@ -15,7 +15,7 @@ exports.ReverseMarkup = function (reverse_markup) {
         ], {columns: 2}).oneTime()
     }
 
-    const scene = new Scene('notify_c',
+    return new Scene('notify_c',
         (ctx) => {
             ctx.scene.next();
             ctx.reply('Хотите получать уведомление об измении в расписании?', null, Markup
@@ -29,16 +29,16 @@ exports.ReverseMarkup = function (reverse_markup) {
             if (typeof ctx.message.payload !== 'undefined') {
                 JSON.parse(ctx.message.payload).button === 'Да' ? ctx.session.notify_c = true : ctx.session.notify_c = false;
             } else {
-                if (ctx.message.text.indexOf('да') !== -1 || ctx.message.text.indexOf('Да') !== -1) ctx.session.notify_c = true;
-                else ctx.session.notify_c = false;
+                ctx.session.notify_c = ctx.message.text.indexOf('да') !== -1 || ctx.message.text.indexOf('Да') !== -1;
             }
 
-            var sql = `UPDATE ${global_params.db_table} SET notify_c = ${ctx.session.notify_c} WHERE vk_id = ${ctx.message.from_id}`;
+            const sql = `UPDATE ${global_params.db_table} SET notify_c = ${ctx.session.notify_c} WHERE vk_id = ${ctx.message.from_id}`;
             sql_db.callback(sql, [], function (err) {
-                if (err) {ctx.reply('Технические шоколадки, успешно устраняем.');return console.log(err);}
-                else ctx.reply('Вы успешно настроили уведомления.', null, reverse_markup);
+                if (err) {
+                    ctx.reply('Технические шоколадки, успешно устраняем.');
+                    return console.log(err);
+                } else ctx.reply('Вы успешно настроили уведомления.', null, reverse_markup);
             });
             ctx.scene.leave();
         });
-    return scene;
-}
+};

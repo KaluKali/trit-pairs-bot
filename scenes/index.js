@@ -5,4 +5,4 @@ exports.Init = function (reverse_markup) {
         require('./notify_e_d').ReverseMarkup(reverse_markup),
         require('./settings').ReverseMarkup(reverse_markup),
     ];
-}
+};

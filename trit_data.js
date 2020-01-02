@@ -1,4 +1,4 @@
-const api = require('./api')
+const api = require('./api');
 
 const valid_groups = [
     12,13,14,15,16,21,22,23,24,25,26,31,32,33,34,35,36,41,42,43,46,101,102,103
@@ -18,16 +18,16 @@ const pairs_time = [
 
 //.then(response=>yourfunc())
 class TritData {
-    constructor(){}
+    // constructor(){}
 
     static isGroup(group){
-        return valid_groups.indexOf(group) !== -1 ? true : false;
+        return valid_groups.indexOf(group) !== -1;
     }
-    getPromise(){ // returned ONLY data. Check api.js
+    static getPromise(){ // returned ONLY data. Check api.js
         return api('https://trit.biz/rr/json2.php');
     }
     getData(func){
-        this.getPromise().then(response=>func(response));
+        TritData.getPromise().then(response=>func(response));
     }
     static ValidGroups(){
         return valid_groups;
@@ -37,4 +37,4 @@ class TritData {
     }
 }
 
-module.exports = TritData
+module.exports = TritData;

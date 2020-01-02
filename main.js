@@ -3,28 +3,26 @@ const Session = require('node-vk-bot-api/lib/session');
 const Stage = require('node-vk-bot-api/lib/stage');
 const Markup = require('node-vk-bot-api/lib/markup');
 
-var table = require('text-table');
-var schedule = require('node-schedule');
+// const table = require('text-table');
+const schedule = require('node-schedule');
 
 const ServerTime = require('./server_time');
 // const TritData = require('./trit_data');
 const MessageParser = require('./tools/message_parser');
 // const YaSpeller = require('./tools/ya_speller');
 const SqlDB = require('./tools/sql_data');
-const levenshtein = require('./tools/levenshtein')
+const levenshtein = require('./tools/levenshtein');
 
 const global_params = require('./globals');
 const hello_carousel = require('./carousels/carousel');
 
-const white_list = ['расписание','найди','помощь','настроить','привет','меню','начать'];
-
-var server_time = new ServerTime();
+const server_time = new ServerTime();
 // var trit_data = new TritData();
 // var ya_speller = new YaSpeller();
-var sql_db = new SqlDB();
+const sql_db = new SqlDB();
 const message_parser = new MessageParser();
 
-const bot = new VkBot("put your token");
+const bot = new VkBot("put your code");
 
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание', 'positive'),
@@ -33,8 +31,9 @@ const reverse_menu = Markup.keyboard([
     Markup.button('Указать группу', 'primary'),
 ], { columns:2 }).oneTime();
 const ctx_scenes = require('./scenes/index').Init(reverse_menu);
-const ctx_methods = require('./methods/index').Init(reverse_menu)
+const ctx_methods = require('./methods/index').Init(reverse_menu);
 
+const white_list = ['расписание','найди','помощь','настроить','привет','меню','начать'];
 const help =
         ['1.1 Для настройки уведомлений напиши мне: \n"настроить уведомления"',
         '1.2 Для настройки группы напиши мне: \n"настроить группу"',
@@ -56,9 +55,9 @@ schedule.scheduleJob(new schedule.RecurrenceRule(
     null,
     null,
     new schedule.Range(0,6),
-    07,//hour
-    00,//minute
-    00,//second
+    7,//hour
+    0,//minute
+    0,//second
 ), function(){
     return ctx_methods.sendingpairs(server_time.getNowDayWeek(),bot);
 });
@@ -89,11 +88,11 @@ bot.use(settings_stage.middleware());
 bot.use((ctx,next)=>{
     ctx.message.payload = typeof ctx.message.payload !== 'undefined' ? JSON.parse(ctx.message.payload) : [];
 
-    var message = ctx.message.text.split(' ');
+    const message = ctx.message.text.split(' ');
     for (let i of white_list){
         if (levenshtein(i, message[0]) <= 2){
-            message.shift()
-            message.unshift(i)
+            message.shift();
+            message.unshift(i);
             ctx.message.text = message.join(' ');
             return next();
         }
@@ -102,9 +101,6 @@ bot.use((ctx,next)=>{
 });
 bot.command('помощь', (ctx)=>{
     ctx.reply(help.join('\n\n'),null,reverse_menu);
-});
-bot.command('debug', (ctx)=>{
-    ctx_methods.sendingpairs(server_time.getNowDayWeek(),bot);
 });
 bot.command('привет', (ctx)=>{
     ctx.reply('Привет. А ты знаешь что я умею?Нет?Напиши мне "помощь"!',null,Markup.keyboard(
@@ -120,15 +116,15 @@ bot.command('меню', async (ctx)=>{
         } else {
             ctx.reply('Выберете один из вариантов:',null,reverse_menu);
         }
-    } else return await bot.execute('messages.send', {
+    } else return bot.execute('messages.send', {
         user_id: ctx.message.from_id,
-        message:'Возможности бота:',
-        random_id:Math.floor(Math.random()*10000),
-        template:JSON.stringify(hello_carousel)
-    }).catch((res)=>{
+        message: 'Возможности бота:',
+        random_id: Math.floor(Math.random() * 10000),
+        template: JSON.stringify(hello_carousel)
+    }).catch((res) => {
         console.log(res);
     });
-})
+});
 bot.command('поиск пары', (ctx)=>{
     ctx.reply([help[help.length-1],help[help.length-2],help[help.length-3],help[help.length-4]].join('\n\n'));
 });
@@ -152,7 +148,7 @@ bot.command('настроить', (ctx) => {
 });
 bot.command('указать группу', (ctx)=>{
     ctx.scene.enter('group');
-})
+});
 bot.command('расписание', async (ctx)=>{
     const user_info = await getUserInfo(ctx.message.from_id);
     const obj_parsed = message_parser.parse_pairs_day(ctx.message.text);
@@ -170,7 +166,7 @@ bot.command('начать', (ctx)=>{
             Markup.button('Помощь', 'primary')
         ]
     ).oneTime());
-})
+});
 bot.on(async (ctx) => {
     switch (ctx.message.payload.method) {
         case 'on':
@@ -178,12 +174,12 @@ bot.on(async (ctx) => {
                 if (typeof ctx.client_info.carousel === 'undefined'){
                     return ctx.reply(help.join('\n\n'));
                 } else {
-                    return await bot.execute('messages.send', {
+                    return bot.execute('messages.send', {
                         user_id: ctx.message.from_id,
-                        message:'Возможности бота:',
-                        random_id:Math.floor(Math.random()*1000),
-                        template:JSON.stringify(hello_carousel)
-                    }).catch((res)=>{
+                        message: 'Возможности бота:',
+                        random_id: Math.floor(Math.random() * 1000),
+                        template: JSON.stringify(hello_carousel)
+                    }).catch((res) => {
                         console.log(res);
                     });
                 }
@@ -201,6 +197,6 @@ bot.on(async (ctx) => {
         ]
     ).oneTime())
 });
-bot.startPolling((err) => {
+bot.startPolling(() => {
     console.log('Bot started.')
 });

@@ -1,10 +1,10 @@
 const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
-const TritData = require('../trit_data')
-const global_params = require('../globals')
+const TritData = require('../trit_data');
+const global_params = require('../globals');
 
-var sql_db = new SqlDB();
+const sql_db = new SqlDB();
 
 
 function getUserInfo(vk_id) {
@@ -20,7 +20,7 @@ exports.ReverseMarkup = function (reverse_markup) {
         ], { columns:2 }).oneTime()
     }
 
-    const scene = new Scene('settings',
+    return new Scene('settings',
         (ctx) => {
             ctx.scene.next();
             ctx.reply('Хотите получать уведомление об измении в расписании?', null, Markup
@@ -31,17 +31,13 @@ exports.ReverseMarkup = function (reverse_markup) {
             );
         },
         (ctx) => {
-            if (typeof ctx.message.payload !== 'undefined'){
+            if (typeof ctx.message.payload !== 'undefined') {
                 JSON.parse(ctx.message.payload).button === 'Да' ? ctx.session.notify_c = true : ctx.session.notify_c = false;
             } else {
-                if (ctx.message.text.indexOf('да')>-1 || ctx.message.text.indexOf('Да')>-1){
-                    ctx.session.notify_c = true
-                } else {
-                    ctx.session.notify_c = false
-                }
+                ctx.session.notify_c = ctx.message.text.indexOf('да') > -1 || ctx.message.text.indexOf('Да') > -1;
             }
 
-            ctx.scene.next()
+            ctx.scene.next();
 
             ctx.reply('Хотите получать расписание вашей группы каждый день?', null, Markup
                 .keyboard([
@@ -51,14 +47,10 @@ exports.ReverseMarkup = function (reverse_markup) {
             );
         },
         (ctx) => {
-            if (typeof ctx.message.payload !== 'undefined'){
+            if (typeof ctx.message.payload !== 'undefined') {
                 JSON.parse(ctx.message.payload).button === 'Да' ? ctx.session.notify_e_d = true : ctx.session.notify_e_d = false;
             } else {
-                if (ctx.message.text.indexOf('да')>-1 || ctx.message.text.indexOf('Да')>-1){
-                    ctx.session.notify_e_d = true
-                } else {
-                    ctx.session.notify_e_d = false
-                }
+                ctx.session.notify_e_d = ctx.message.text.indexOf('да') > -1 || ctx.message.text.indexOf('Да') > -1;
             }
 
             ctx.scene.next();
@@ -68,8 +60,9 @@ exports.ReverseMarkup = function (reverse_markup) {
             );
         },
         async (ctx) => {
+            let sql;
             ctx.session.stud_group = +ctx.message.text;
-            if (!TritData.isGroup(+ctx.session.stud_group)){
+            if (!TritData.isGroup(+ctx.session.stud_group)) {
                 ctx.scene.leave();
                 return ctx.reply('Указанная группа неверная, бот не настроен. Напиши мне "помощь" для справки по функциям!',
                     null,
@@ -81,30 +74,34 @@ exports.ReverseMarkup = function (reverse_markup) {
                 );
             }
 
-            var str_reply = 'Вы успешно настроили бота, теперь он:'
-            if (ctx.session.notify_c){ str_reply += '\nприсылает вам дневное расписание каждый день'}
-            if (ctx.session.notify_e_d){ str_reply+= '\nсообщает об изменении в расписании'}
-            if (!ctx.session.notify_c && !ctx.session.notify_e_d) { str_reply+= '\nничего не делает.'}
+            let str_reply = 'Вы успешно настроили бота, теперь он:';
+            if (ctx.session.notify_c) {
+                str_reply += '\nприсылает вам дневное расписание каждый день'
+            }
+            if (ctx.session.notify_e_d) {
+                str_reply += '\nсообщает об изменении в расписании'
+            }
+            if (!ctx.session.notify_c && !ctx.session.notify_e_d) {
+                str_reply += '\nничего не делает.'
+            }
 
             const user_info = await getUserInfo(ctx.message.from_id);
 
-            if(typeof user_info == 'undefined'){
-                var sql = `INSERT INTO ${global_params.db_table}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
-                var values = [ctx.message.from_id,ctx.session.notify_c,ctx.session.notify_e_d,1,ctx.session.stud_group]
-                sql_db.callback(sql, values, function(err, results) {
-                    if(err) console.log(err);
+            if (typeof user_info == 'undefined') {
+                sql = `INSERT INTO ${global_params.db_table}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
+                const values = [ctx.message.from_id, ctx.session.notify_c, ctx.session.notify_e_d, 1, ctx.session.stud_group];
+                sql_db.callback(sql, values, function (err, results) {
+                    if (err) console.log(err);
                 });
             } else {
-                var sql = `UPDATE ${global_params.db_table} SET notify_c = ${ctx.session.notify_c},notify_e_d = ${ctx.session.notify_e_d},user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
-                sql_db.callback(sql,[],function (err) {
-                    if(err) console.log(err);
+                sql = `UPDATE ${global_params.db_table} SET notify_c = ${ctx.session.notify_c},notify_e_d = ${ctx.session.notify_e_d},user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
+                sql_db.callback(sql, [], function (err) {
+                    if (err) console.log(err);
                 })
             }
 
-            ctx.reply(str_reply,null,reverse_markup);
+            ctx.reply(str_reply, null, reverse_markup);
             ctx.scene.leave();
         }
     );
-
-    return scene;
-}
+};

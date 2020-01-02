@@ -1,17 +1,17 @@
-const api = require('../api')
+const api = require('../api');
 
 
-var YaSpeller = function(){
+const YaSpeller = function () {
     this.promise = function (txt) {
         return new Promise((resolve => {
             api(encodeURI(`https://speller.yandex.net/services/spellservice.json/checkText?text=${txt}?lang=ru`))
-                .then(response=>resolve(response))
+                .then(response => resolve(response))
         }));
     };
-}
+};
 
 YaSpeller.prototype.getList = async function(txt){
-    var data = await this.promise(txt);
+    const data = await this.promise(txt);
 
     const result = [];
 
@@ -22,9 +22,9 @@ YaSpeller.prototype.getList = async function(txt){
     }
 
     return result
-}
+};
 YaSpeller.prototype.getText = async function(txt){
-    var data = await this.promise(txt);
+    const data = await this.promise(txt);
 
     const result = [];
 
@@ -34,7 +34,7 @@ YaSpeller.prototype.getText = async function(txt){
         })
     }
 
-    return result.join(' ')
-}
+    return result.join(' ');
+};
 
-module.exports = YaSpeller
+module.exports = YaSpeller;

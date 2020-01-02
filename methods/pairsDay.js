@@ -1,12 +1,12 @@
 const Markup = require('node-vk-bot-api/lib/markup');
 
-var table = require('text-table');
+const table = require('text-table');
 
 const ServerTime = require('../server_time');
 const TritData = require('../trit_data');
 
-var server_time = new ServerTime();
-var trit_data = new TritData();
+const server_time = new ServerTime();
+const trit_data = new TritData();
 
 exports.ReverseMarkup = function (reverse_markup) {
     if (typeof reverse_markup === 'undefined') {
@@ -30,11 +30,11 @@ exports.ReverseMarkup = function (reverse_markup) {
         const group = obj.group;
 
         trit_data.getData( (data) => {
-            data_day = data[group]['weekdays'][weekday]['pairs'];
-            const data_day_s = []
+            let data_day = data[group]['weekdays'][weekday]['pairs'];
+            const data_day_s = [];
             data_day.forEach((pair,i) => {
                 if (i < 4){// Pair limit
-                    p = [data_day[i].name != false ? data_day[i].name : '-', data_day[i].room != false ? data_day[i].room : '-'];
+                    p = [data_day[i].name !== false ? data_day[i].name : '-', data_day[i].room !== false ? data_day[i].room : '-'];
                     data_day_s.push(p.slice(),p.slice());
                 }
             });
@@ -46,4 +46,4 @@ exports.ReverseMarkup = function (reverse_markup) {
             ctx.reply(`Список уроков для ${group} группы на ${weekday}.\n\n${t.toString()}`,null,reverse_markup);
         });
     }
-}
+};

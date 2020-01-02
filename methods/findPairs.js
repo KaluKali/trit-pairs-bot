@@ -4,8 +4,8 @@ const table = require('text-table');
 
 const TritData = require('../trit_data');
 
-const levenshtein = require('../tools/levenshtein')
-const bigrams = require('../tools/bigrams')
+const levenshtein = require('../tools/levenshtein');
+// const bigrams = require('../tools/bigrams')
 
 const trit_data = new TritData();
 
@@ -24,12 +24,12 @@ const abbreviation = [
     "ТИРНТОиРТА",
     "МНиРУиБРТ",
 
-]
+];
 
 function isAbbreviation(txt){
-    const txt_u = txt.toLowerCase()
+    const txt_u = txt.toLowerCase();
     for (let abb of abbreviation){
-        let abb_u = abb.toLowerCase()
+        let abb_u = abb.toLowerCase();
         if (abb_u.length >3){
             if (levenshtein(txt_u,abb_u) <=2 && abb_u.indexOf(txt_u) === -1) return abb_u;
             else if (abb_u.indexOf(txt_u) !== -1){ return abb_u;}
@@ -58,7 +58,7 @@ exports.ReverseMarkup = (reverse_markup) => {
         } else {
             return new Error('find_Pairs: Argument error');
         }
-        const numbers = [0,1,2,3,4,5,6,7,8,9]
+        const numbers = [0,1,2,3,4,5,6,7,8,9];
         const pair = obj.pair;
         const group = obj.group;
         const weekday = obj.weekday !== "" ? obj.weekday : -1;
@@ -76,12 +76,12 @@ exports.ReverseMarkup = (reverse_markup) => {
 
                         // console.log(pair_f_low, pair_f.room,group_f)
 
-                        pair_f_low.forEach((pf,pfi)=>{
+                        pair_f_low.forEach((pf)=>{
                             if (pf.length > 1){
                                 // pfil - pairs func i lower
                                 pair_p_low.forEach((pp,ppi)=>{
                                     if (levenshtein(pf,pp) <=2){
-                                        for (let ii of numbers) if (pp.indexOf(ii) !== -1) return;
+                                        for (let ii of numbers) if (pp.indexOf(''+ii) !== -1) return;
                                         if (!isAbbreviation(pp)){
                                             return pair_p_low[ppi] = pf;
                                         } else {
@@ -104,11 +104,11 @@ exports.ReverseMarkup = (reverse_markup) => {
             });
 
             let s_response;
-            if (group !== -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[2] == group && obj_f[1] == weekday);
+            if (group !== -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[2] === group && obj_f[1] === weekday);
             else {
-                if (group == -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[1] == weekday);
+                if (group === -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[1] === weekday);
                 else {
-                    if (group !== -1 && weekday == -1) s_response = fin.filter(obj_f => obj_f[2] == group);
+                    if (group !== -1 && weekday === -1) s_response = fin.filter(obj_f => obj_f[2] === group);
                     else s_response = fin;
                 }
             }
@@ -116,8 +116,8 @@ exports.ReverseMarkup = (reverse_markup) => {
                 return ctx.reply(`Найдено слишком много результатов!`,null,reverse_markup);
             } else {
                 const t = table(s_response, { align: [ 'r', 'c', 'l' ], hsep: ' || ' });
-                return ctx.reply(`Список пар, найденных на ${weekday == -1 ? 'всю неделю' : weekday} у ${group == -1 ? 'всех групп' : `группы ${group}`}:\n\n${t}`,null,reverse_markup);
+                return ctx.reply(`Список пар, найденных на ${weekday === -1 ? 'всю неделю' : weekday} у ${group === -1 ? 'всех групп' : `группы ${group}`}:\n\n${t}`,null,reverse_markup);
             }
         });
     }
-}
+};
