@@ -23,7 +23,6 @@ const abbreviation = [
     "ТМнМСсПУ",
     "ТИРНТОиРТА",
     "МНиРУиБРТ",
-
 ];
 
 function isAbbreviation(txt){
@@ -65,59 +64,60 @@ exports.ReverseMarkup = (reverse_markup) => {
 
         trit_data.getData((data) => {
             const fin = [];
-            TritData.ValidGroups().forEach((group_f) => {
-                for (let weekday_f in data[group_f]['weekdays']){ // data[group_f] is not iterable
-                    data[group_f]['weekdays'][weekday_f].pairs.forEach((pair_f)=> {
-                        if (pair_f.name === false) return;
-                        pair_f.name = pair_f.name.replace(/ {1,}/g,' ');
+            trit_data.getValidGroups((groups) =>{
+                groups.forEach((group_f) => {
+                    for (let weekday_f in data[group_f]['weekdays']){ // data[group_f] is not iterable
+                        data[group_f]['weekdays'][weekday_f].pairs.forEach((pair_f)=> {
+                            if (pair_f.name === false) return;
+                            pair_f.name = pair_f.name.replace(/ {1,}/g,' ');
 
-                        let pair_f_low = pair_f.name.toLowerCase().split(' ');
-                        let pair_p_low = pair.toLowerCase().split(' ');
+                            let pair_f_low = pair_f.name.toLowerCase().split(' ');
+                            let pair_p_low = pair.toLowerCase().split(' ');
 
-                        // console.log(pair_f_low, pair_f.room,group_f)
+                            // console.log(pair_f_low, pair_f.room,group_f)
 
-                        pair_f_low.forEach((pf)=>{
-                            if (pf.length > 1){
-                                // pfil - pairs func i lower
-                                pair_p_low.forEach((pp,ppi)=>{
-                                    if (levenshtein(pf,pp) <=2){
-                                        for (let ii of numbers) if (pp.indexOf(''+ii) !== -1) return;
-                                        if (!isAbbreviation(pp)){
-                                            return pair_p_low[ppi] = pf;
+                            pair_f_low.forEach((pf)=>{
+                                if (pf.length > 1){
+                                    // pfil - pairs func i lower
+                                    pair_p_low.forEach((pp,ppi)=>{
+                                        if (levenshtein(pf,pp) <=2){
+                                            for (let ii of numbers) if (pp.indexOf(''+ii) !== -1) return;
+                                            if (!isAbbreviation(pp)){
+                                                return pair_p_low[ppi] = pf;
+                                            } else {
+                                                return pair_p_low[ppi] = isAbbreviation(pp);
+                                            }
                                         } else {
-                                            return pair_p_low[ppi] = isAbbreviation(pp);
+                                            if (isAbbreviation(pp)) return pair_p_low[ppi] = isAbbreviation(pp);
+                                            if (pf.indexOf(pp) !== -1) return pair_p_low[ppi] = pp;
                                         }
-                                    } else {
-                                        if (isAbbreviation(pp)) return pair_p_low[ppi] = isAbbreviation(pp);
-                                        if (pf.indexOf(pp) !== -1) return pair_p_low[ppi] = pp;
-                                    }
-                                });
+                                    });
+                                }
+                            });
+
+                            let pair_p_low_j = pair_p_low.join(' ');
+                            if (pair_f.name.toLowerCase().indexOf(pair_p_low_j) !== -1){
+                                return fin.push([pair_f.name,weekday_f,group_f]);
                             }
                         });
-
-                        let pair_p_low_j = pair_p_low.join(' ');
-                        if (pair_f.name.toLowerCase().indexOf(pair_p_low_j) !== -1){
-                            return fin.push([pair_f.name,weekday_f,group_f]);
-                        }
-                    });
+                    }
+                });
+                let s_response;
+                if (group !== -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[2] === group && obj_f[1] === weekday);
+                else {
+                    if (group === -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[1] === weekday);
+                    else {
+                        if (group !== -1 && weekday === -1) s_response = fin.filter(obj_f => obj_f[2] === group);
+                        else s_response = fin;
+                    }
+                }
+                if (s_response.length > 24){
+                    return ctx.reply(`Найдено слишком много результатов!`,null,reverse_markup);
+                } else {
+                    const t = table(s_response, { align: [ 'r', 'c', 'l' ], hsep: ' || ' });
+                    return ctx.reply(`Список пар, найденных на ${weekday === -1 ? 'всю неделю' : weekday} у ${group === -1 ? 'всех групп' : `группы ${group}`}:\n\n${t}`,null,reverse_markup);
                 }
             });
-
-            let s_response;
-            if (group !== -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[2] === group && obj_f[1] === weekday);
-            else {
-                if (group === -1 && weekday !== -1) s_response = fin.filter(obj_f => obj_f[1] === weekday);
-                else {
-                    if (group !== -1 && weekday === -1) s_response = fin.filter(obj_f => obj_f[2] === group);
-                    else s_response = fin;
-                }
-            }
-            if (s_response.length > 24){
-                return ctx.reply(`Найдено слишком много результатов!`,null,reverse_markup);
-            } else {
-                const t = table(s_response, { align: [ 'r', 'c', 'l' ], hsep: ' || ' });
-                return ctx.reply(`Список пар, найденных на ${weekday === -1 ? 'всю неделю' : weekday} у ${group === -1 ? 'всех групп' : `группы ${group}`}:\n\n${t}`,null,reverse_markup);
-            }
         });
     }
 };

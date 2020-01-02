@@ -3,11 +3,12 @@ const ServerTime = require('../server_time');
 const levenshtein = require('../tools/levenshtein');
 
 const server_time = new ServerTime();
+const trit_data = new TritData();
 
 class MessageParser {
     // constructor(){}
 
-    parse2_find_arg(txt){
+    async parse2_find_arg(txt){
         const params = {pair:'',group:-1,weekday:''};
         const args = txt
             .replace(/ {1,}/g,' ')
@@ -18,8 +19,10 @@ class MessageParser {
         // 1: пара
         // 2: № группы
         // 3: день недели
-
-        args.forEach((param,i)=>{
+        let valid_groups = await new Promise(resolve => {
+            trit_data.getValidGroups(resolve);
+        });
+        args.forEach((param)=>{
             if (param==='на') return;
             if (param.indexOf('групп')!== -1) return;
             if (isNaN(+param)){
@@ -29,12 +32,12 @@ class MessageParser {
                     for (let day of ServerTime.Weekdays()){
                         if (levenshtein(day,param) <= 2) return params.weekday = day;
                     }
-
                     return params.pair = `${params.pair} ${param}`;
                 }
             } else {
-                if (TritData.isGroup(+param)) return params.group = +param;
-                else return params.pair = `${params.pair} ${param}`;
+                if (valid_groups.indexOf(+param) !== -1){
+                    params.group = +param;
+                } else params.pair = `${params.pair} ${param}`;
             }
         });
         params.pair = params.pair.trim();
@@ -54,10 +57,7 @@ class MessageParser {
 
         args.forEach((param)=>{
             if (param==='на') return;
-            else if (param==='завтра'){
-                params.weekday = ServerTime.getDayWeek(server_time.getDay()+1);
-                return;
-            }
+            else if (param==='завтра') return params.weekday = ServerTime.getDayWeek(server_time.getDay()+1);
             else if(isNaN(+param)){
                 if (ServerTime.isWeekday(param)){
                     params.weekday = ''+param;
@@ -67,9 +67,11 @@ class MessageParser {
                     }
                 }
             } else {
-                if (TritData.isGroup(+param)){
-                    params.group = +param;
-                }
+                trit_data.getValidGroups((groups)=>{
+                    if (groups.indexOf(+param) !== -1){
+                        params.group = +param;
+                    }
+                });
             }
         });
         return params;

@@ -1,7 +1,14 @@
 const axios = require('axios');
+const https = require('https');
 
 module.exports = async function (url) {
-    const { data } = await axios.post(url);
+    const instance = axios.create({
+        httpsAgent: new https.Agent({
+            rejectUnauthorized: true // при ssl err-> false
+        })
+    });
+
+    const { data } = await instance.post(url);
 
     return data;
 };

@@ -5,6 +5,7 @@ const TritData = require('../trit_data');
 const global_params = require('../globals');
 
 const sql_db = new SqlDB();
+const trit_data = new TritData();
 
 
 function getUserInfo(vk_id) {
@@ -54,17 +55,19 @@ exports.ReverseMarkup = function (reverse_markup) {
             }
 
             ctx.scene.next();
-
-            ctx.reply('Номер вашей группы?', null, Markup
-                .keyboard(TritData.ValidGroups(), {columns: 3}).oneTime()
-            );
+            trit_data.getValidGroups((groups)=>{
+                ctx.reply('Номер вашей группы?', null, Markup
+                    .keyboard(groups, {columns: 3}).oneTime()
+                );
+            });
         },
         async (ctx) => {
-            let sql;
             ctx.session.stud_group = +ctx.message.text;
-            if (!TritData.isGroup(+ctx.session.stud_group)) {
+
+            let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
+            if (valid_groups.indexOf(+ctx.session.stud_group) === -1) {
                 ctx.scene.leave();
-                return ctx.reply('Указанная группа неверная, бот не настроен. Напиши мне "помощь" для справки по функциям!',
+                return ctx.reply('Указанная группа неверная, бот не настроен.',
                     null,
                     Markup.keyboard(
                         [
@@ -74,6 +77,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                 );
             }
 
+            let sql;
             let str_reply = 'Вы успешно настроили бота, теперь он:';
             if (ctx.session.notify_c) {
                 str_reply += '\nприсылает вам дневное расписание каждый день'
@@ -90,7 +94,7 @@ exports.ReverseMarkup = function (reverse_markup) {
             if (typeof user_info == 'undefined') {
                 sql = `INSERT INTO ${global_params.db_table}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
                 const values = [ctx.message.from_id, ctx.session.notify_c, ctx.session.notify_e_d, 1, ctx.session.stud_group];
-                sql_db.callback(sql, values, function (err, results) {
+                sql_db.callback(sql, values, function (err) {
                     if (err) console.log(err);
                 });
             } else {

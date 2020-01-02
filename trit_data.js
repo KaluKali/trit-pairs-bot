@@ -1,8 +1,7 @@
 const api = require('./api');
+const fs = require('fs');
 
-const valid_groups = [
-    12,13,14,15,16,21,22,23,24,25,26,31,32,33,34,35,36,41,42,43,46,101,102,103
-];
+const now_date = new Date();
 
 const pairs_time = [
     '8:00 - 8:45',
@@ -20,14 +19,86 @@ const pairs_time = [
 class TritData {
     // constructor(){}
 
-    static isGroup(group){
-        return valid_groups.indexOf(group) !== -1;
-    }
-    static getPromise(){ // returned ONLY data. Check api.js
+    static getDataPromise(){
         return api('https://trit.biz/rr/json2.php');
     }
     getData(func){
-        TritData.getPromise().then(response=>func(response));
+        fs.access('data.json', fs.constants.F_OK, (err) => {
+            if(!err){
+                fs.readFile('data.json',"utf8", (err,data)=>{
+                    if (!err){
+                        const data_s = JSON.parse(data);
+                        const back_date = new Date(data_s.date);
+                        if (back_date.getDate() === now_date.getDate()){
+                            func(data_s.data);
+                        } else {
+                            TritData.getDataPromise().then(response=>{
+                                try {
+                                    fs.writeFileSync("data.json", JSON.stringify({date:now_date.toJSON(),data:response}),"utf-8");
+                                } catch (e) {
+                                    console.log(e);
+                                } finally {
+                                    console.log('data.json updated');
+                                    func(response);
+                                }
+                            });
+                        }
+                    }
+                });
+            } else {
+                TritData.getDataPromise().then(response=>{
+                    try {
+                        fs.writeFileSync("data.json", JSON.stringify({date:now_date.toJSON(),data:response}),"utf-8");
+                    } catch (e) {
+                        console.log(e);
+                    } finally {
+                        console.log("data.json created");
+                        func(response);
+                    }
+
+                });
+            }
+        });
+    }
+    static getGroupsPromise(){
+        return api('https://trit.biz/rr/json.php');
+    }
+    getValidGroups(func){
+        fs.access('groups.json', fs.constants.F_OK, (err) => {
+            if(!err){
+                fs.readFile('groups.json',"utf8", (err,data)=>{
+                    if (!err){
+                        const data_s = JSON.parse(data);
+                        const back_date = new Date(data_s.date);
+                        if (back_date.getDate() === now_date.getDate()){
+                            func(data_s.data);
+                        } else {
+                            TritData.getGroupsPromise().then(response=>{
+                                try {
+                                    fs.writeFileSync("groups.json", JSON.stringify({date:now_date.toJSON(),data:response}),"utf-8");
+                                } catch (e) {
+                                    console.log(e);
+                                } finally {
+                                    console.log('groups.json updated');
+                                    func(response);
+                                }
+                            });
+                        }
+                    }
+                });
+            } else {
+                TritData.getGroupsPromise().then(response=>{
+                    try {
+                        fs.writeFileSync("groups.json", JSON.stringify({date:now_date.toJSON(),data:response}),"utf-8");
+                    } catch (e) {
+                        console.log(e);
+                    } finally {
+                        console.log('groups.json created');
+                        func(response);
+                    }
+                });
+            }
+        });
     }
     static ValidGroups(){
         return valid_groups;

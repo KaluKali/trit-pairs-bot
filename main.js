@@ -22,7 +22,7 @@ const server_time = new ServerTime();
 const sql_db = new SqlDB();
 const message_parser = new MessageParser();
 
-const bot = new VkBot("put your code");
+const bot = new VkBot("85a94a69936efb9ced87f2220a87f881ca7b221e5cfbda93a95d576673e59b98bd38250a9daf9e9561f6c");
 
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание', 'positive'),
@@ -128,8 +128,9 @@ bot.command('меню', async (ctx)=>{
 bot.command('поиск пары', (ctx)=>{
     ctx.reply([help[help.length-1],help[help.length-2],help[help.length-3],help[help.length-4]].join('\n\n'));
 });
-bot.command('найди', (ctx)=>{
-    ctx_methods.findpairs(ctx,message_parser.parse2_find_arg(ctx.message.text))
+bot.command('найди', async (ctx)=>{
+    let obj = await message_parser.parse2_find_arg(ctx.message.text);
+    ctx_methods.findpairs(ctx,obj);
 });
 bot.command('настроить', (ctx) => {
     const params = message_parser.parse_settings(ctx.message.text);
