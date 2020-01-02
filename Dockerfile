@@ -2,12 +2,12 @@ FROM node:12
 
 ARG APP_DIR=app
 RUN mkdir -p ${APP_DIR}
-WORKDIR ${APP_DIR}
 
-COPY package*.json ./
+COPY . ./${APP_DIR}
+
 RUN npm install
 
-COPY . .
+WORKDIR ${APP_DIR}
 
 EXPOSE 3000
 
