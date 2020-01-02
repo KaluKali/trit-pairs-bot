@@ -1,4 +1,4 @@
-﻿require('dotenv').config();
+﻿// require('dotenv').config();
 
 
 const VkBot = require('node-vk-bot-api');
