@@ -18,5 +18,5 @@ ENV DB_TABLE=users
 
 EXPOSE 3000
 
-CMD ["node", "app/main.js"]
+CMD ["node", "main.js"]
 
