@@ -99,8 +99,12 @@ exports.ReverseMarkup = function (reverse_markup) {
             } else {
                 sql = `UPDATE ${process.env.DB_TABLE} SET notify_c = ${ctx.session.notify_c},notify_e_d = ${ctx.session.notify_e_d},user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
                 sql_db.callback(sql, [], function (err) {
-                    if (err) console.log(err);
-                })
+                    if (err) {
+                        console.log(err);
+                        ctx.scene.leave();
+                        ctx.reply('Технические шоколадки, успешно устраняем.');
+                    } else ctx.reply('Вы успешно настроили бота.', null, reverse_markup);
+                });
             }
 
             ctx.reply(str_reply, null, reverse_markup);

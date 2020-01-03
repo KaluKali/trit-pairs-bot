@@ -34,6 +34,7 @@ exports.ReverseMarkup = function (reverse_markup) {
             const sql = `UPDATE ${global_params.db_table} SET notify_e_d = ${ctx.session.notify_e_d} WHERE vk_id = ${ctx.message.from_id}`;
             sql_db.callback(sql, [], function (err) {
                 if (err) {
+                    ctx.scene.leave();
                     ctx.reply('Технические шоколадки, успешно устраняем.');
                     return console.log(err);
                 } else ctx.reply('Вы успешно настроили уведомления.', null, reverse_markup);

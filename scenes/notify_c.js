@@ -38,6 +38,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                     return console.log(err);
                 } else ctx.reply('Вы успешно настроили уведомления.', null, reverse_markup);
             });
+
             ctx.scene.leave();
         });
 };
