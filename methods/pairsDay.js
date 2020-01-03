@@ -2,7 +2,7 @@ const Markup = require('node-vk-bot-api/lib/markup');
 
 const table = require('text-table');
 
-const ServerTime = require('../server_time');
+const ServerTime = require('../tools/server_time');
 const TritData = require('../trit_data');
 
 const server_time = new ServerTime();

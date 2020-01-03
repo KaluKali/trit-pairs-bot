@@ -9,7 +9,7 @@ const Markup = require('node-vk-bot-api/lib/markup');
 // const table = require('text-table');
 const schedule = require('node-schedule');
 
-const ServerTime = require('./server_time');
+const ServerTime = require('./tools/server_time');
 // const TritData = require('./trit_data');
 const MessageParser = require('./tools/message_parser');
 // const YaSpeller = require('./tools/ya_speller');

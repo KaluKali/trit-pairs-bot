@@ -1,5 +1,5 @@
 const TritData = require('../trit_data');
-const ServerTime = require('../server_time');
+const ServerTime = require('./server_time');
 const levenshtein = require('../tools/levenshtein');
 
 const server_time = new ServerTime();
@@ -19,9 +19,7 @@ class MessageParser {
         // 1: пара
         // 2: № группы
         // 3: день недели
-        let valid_groups = await new Promise(resolve => {
-            trit_data.getValidGroups(resolve);
-        });
+        let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
         args.forEach((param)=>{
             if (param==='на') return;
             if (param.indexOf('групп')!== -1) return;
@@ -43,7 +41,7 @@ class MessageParser {
         params.pair = params.pair.trim();
         return params;
     }
-    parse_pairs_day(txt){
+    async parse_pairs_day(txt){
         const params = {group:-1,weekday:''};
         const args = txt
             .replace(/ {1,}/g,' ')
@@ -54,6 +52,7 @@ class MessageParser {
         // 1 группа
         // 2
         // 3 день недели
+        let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
 
         args.forEach((param)=>{
             if (param==='на') return;
@@ -67,11 +66,9 @@ class MessageParser {
                     }
                 }
             } else {
-                trit_data.getValidGroups((groups)=>{
-                    if (groups.indexOf(+param) !== -1){
-                        params.group = +param;
-                    }
-                });
+                if (valid_groups.indexOf(+param) !== -1){
+                    params.group = +param;
+                }
             }
         });
         return params;

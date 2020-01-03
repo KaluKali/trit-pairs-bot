@@ -1,4 +1,4 @@
-const api = require('./api');
+const api = require('./tools/api');
 const fs = require('fs');
 
 const now_date = new Date();
@@ -99,9 +99,6 @@ class TritData {
                 });
             }
         });
-    }
-    static ValidGroups(){
-        return valid_groups;
     }
     static PairsTime(){
         return pairs_time;
