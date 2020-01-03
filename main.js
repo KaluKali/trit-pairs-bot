@@ -1,5 +1,5 @@
 ﻿// require('dotenv').config();
-
+process.title = 'trit-pairs-bot';
 
 const VkBot = require('node-vk-bot-api');
 const Session = require('node-vk-bot-api/lib/session');
