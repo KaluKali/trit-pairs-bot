@@ -4,14 +4,14 @@ VK bot for vk.com/trit_biz
 
 ## Getting Started
 
-In .env put your table name in database and data's for authorizing in mysql
-
 execute deployment.sql into mysql-db
 
-put your token in main.js
+create file ".env"
+
+In .env put your table name in database, data's for authorizing in mysql, your api token
+
+npm start
 
 ## Installing
 
 npm install
-
-node main.js

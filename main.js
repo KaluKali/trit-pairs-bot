@@ -61,7 +61,7 @@ schedule.scheduleJob(new schedule.RecurrenceRule(
     0,//minute
     0,//second
 ), function(){
-    return ctx_methods.sendingpairs(server_time.getNowDayWeek(),bot);
+    return ctx_methods.sendingpairs(server_time.getNowWeekday(),bot);
 });
 
 async function getUserInfo(vk_id) {
@@ -131,7 +131,7 @@ bot.command('поиск пары', (ctx)=>{
     ctx.reply([help[help.length-1],help[help.length-2],help[help.length-3],help[help.length-4]].join('\n\n'));
 });
 bot.command('найди', async (ctx)=>{
-    let obj = await message_parser.parse2_find_arg(ctx.message.text);
+    let obj = await message_parser.parse_find_arg(ctx.message.text);
     ctx_methods.findpairs(ctx,obj);
 });
 bot.command('настроить', (ctx) => {
@@ -154,7 +154,7 @@ bot.command('указать группу', (ctx)=>{
 });
 bot.command('расписание', async (ctx)=>{
     const user_info = await getUserInfo(ctx.message.from_id);
-    const obj_parsed = message_parser.parse_pairs_day(ctx.message.text);
+    const obj_parsed = await message_parser.parse_pairs_day(ctx.message.text);
 
     if (typeof user_info === 'undefined'){
         ctx.scene.enter('group');

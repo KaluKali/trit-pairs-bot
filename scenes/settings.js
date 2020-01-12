@@ -94,16 +94,21 @@ exports.ReverseMarkup = function (reverse_markup) {
                 sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
                 const values = [ctx.message.from_id, ctx.session.notify_c, ctx.session.notify_e_d, 1, ctx.session.stud_group];
                 sql_db.callback(sql, values, function (err) {
-                    if (err) console.log(err);
+                    if (err) {
+                        ctx.reply(str_reply, null, reverse_markup);
+                        return console.log(err);
+                    } else ctx.reply(str_reply, null, reverse_markup);
                 });
             } else {
                 sql = `UPDATE ${process.env.DB_TABLE} SET notify_c = ${ctx.session.notify_c},notify_e_d = ${ctx.session.notify_e_d},user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
                 sql_db.callback(sql, [], function (err) {
-                    if (err) console.log(err);
-                })
+                    if (err) {
+                        ctx.reply(str_reply, null, reverse_markup);
+                        return console.log(err);
+                    } else ctx.reply(str_reply, null, reverse_markup);
+                });
             }
 
-            ctx.reply(str_reply, null, reverse_markup);
             ctx.scene.leave();
         }
     );
