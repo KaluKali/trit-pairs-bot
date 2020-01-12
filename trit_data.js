@@ -25,7 +25,7 @@ class TritData {
     getData(func){
         fs.access('data.json', fs.constants.F_OK, (err) => {
             if(!err){
-                fs.readFile('data.json',"utf8", (err,data)=>{
+                fs.readFile('data.json',"utf-8", (err,data)=>{
                     if (!err){
                         const data_s = JSON.parse(data);
                         const back_date = new Date(data_s.date);
@@ -66,7 +66,7 @@ class TritData {
     getValidGroups(func){
         fs.access('groups.json', fs.constants.F_OK, (err) => {
             if(!err){
-                fs.readFile('groups.json',"utf8", (err,data)=>{
+                fs.readFile('groups.json',"utf-8", (err,data)=>{
                     if (!err){
                         const data_s = JSON.parse(data);
                         const back_date = new Date(data_s.date);
@@ -103,6 +103,7 @@ class TritData {
     static PairsTime(){
         return pairs_time;
     }
+
 }
 
 module.exports = TritData;

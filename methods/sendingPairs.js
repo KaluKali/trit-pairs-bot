@@ -38,13 +38,12 @@ exports.ReverseMarkup = function (reverse_markup) {
                 let uniq_exec_groups = [...new Set(exec_groups)];
                 // сортируем только по уникальным значениям, получая те группы которым нужно сформировать таблицу расписания
                 uniq_exec_groups.forEach((group) => {
-                    data_day = data[group]['weekdays'][weekday]['pairs'];
                     const data_day_s = [];
                     // формируем таблицу
-                    data_day.forEach((pair,i) => {
-                        if (i < 4){
-                            p = [data_day[i].name !== false ? data_day[i].name : '-', data_day[i].room !== false ? data_day[i].room : '-'];
-                            data_day_s.push(p.slice(),p.slice());
+                    data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
+                        if (i < 4) {
+                            let p = [pair.name !== false ? pair.name : '-', pair.room !== false ? pair.room : '-'];
+                            data_day_s.push(p, p.slice());
                         }
                     });
                     data_day_s.forEach((elem,i) => {

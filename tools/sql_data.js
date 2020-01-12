@@ -16,9 +16,9 @@ const SqlDB = function () {
     this.connection = connection;
 };
 
-SqlDB.prototype.getData = function(sql,value){
+SqlDB.prototype.getData = function(sql,values){
     return new Promise(resolve =>{
-        this.connection.query(sql,value,(err,[data])=>{
+        this.connection.query(sql,values,(err,[data])=>{
             resolve(data);
         });
     });

@@ -68,10 +68,9 @@ exports.ReverseMarkup = function (reverse_markup) {
                 sql = `UPDATE ${process.env.DB_TABLE} SET user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
                 sql_db.callback(sql, [], function (err) {
                     if (err) {
-                        ctx.reply('Технические шоколадки, успешно устраняем.');
+                        ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
                         return console.log(err);
-                    }
-                    ctx.reply('Вы успешно настроили вашу группу.', null, reverse_markup);
+                    } else ctx.reply('Вы успешно настроили уведомления.', null, reverse_markup);
                 });
             }
 

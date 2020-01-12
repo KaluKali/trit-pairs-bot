@@ -8,7 +8,7 @@ const trit_data = new TritData();
 class MessageParser {
     // constructor(){}
 
-    async parse2_find_arg(txt){
+    async parse_find_arg(txt){
         const params = {pair:'',group:-1,weekday:''};
         const args = txt
             .replace(/ {1,}/g,' ')
@@ -56,7 +56,7 @@ class MessageParser {
 
         args.forEach((param)=>{
             if (param==='на') return;
-            else if (param==='завтра') return params.weekday = ServerTime.getDayWeek(server_time.getDay()+1);
+            else if (param==='завтра') return params.weekday = ServerTime.getWeekday(server_time.getDay()+1);
             else if(isNaN(+param)){
                 if (ServerTime.isWeekday(param)){
                     params.weekday = ''+param;

@@ -17,7 +17,6 @@ exports.ReverseMarkup = function (reverse_markup) {
             Markup.button('Указать группу', 'primary'),
         ], {columns: 2}).oneTime()
     }
-
     return async (ctx, obj) => { //send pairs to people
         if (typeof ctx === 'undefined' || typeof obj === 'undefined'){
             return new Error('pairs_Day: Argument error');
@@ -26,16 +25,16 @@ exports.ReverseMarkup = function (reverse_markup) {
             return ctx.reply('Вы не указали пару или не настроили бота! Напиши мне "помощь" для получения справки по функциям!')
         }
 
-        const weekday = obj.weekday !== "" ? obj.weekday : server_time.getNowDayWeek();
+        const weekday = obj.weekday !== "" ? obj.weekday : server_time.getNowWeekday();
         const group = obj.group;
 
         trit_data.getData( (data) => {
-            let data_day = data[group]['weekdays'][weekday]['pairs'];
             const data_day_s = [];
-            data_day.forEach((pair,i) => {
-                if (i < 4){// Pair limit
-                    p = [data_day[i].name !== false ? data_day[i].name : '-', data_day[i].room !== false ? data_day[i].room : '-'];
-                    data_day_s.push(p.slice(),p.slice());
+
+            data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
+                if (i < 4){ // Pair limit
+                    let p = [pair.name !== false ? pair.name : '-', pair.room !== false ? pair.room : '-'];
+                    data_day_s.push(p,p.slice());
                 }
             });
             data_day_s.forEach((elem,i) => {

@@ -66,7 +66,7 @@ exports.ReverseMarkup = (reverse_markup) => {
             const fin = [];
             trit_data.getValidGroups((groups) =>{
                 groups.forEach((group_f) => {
-                    for (let weekday_f in data[group_f]['weekdays']){ // data[group_f] is not iterable
+                    for (let weekday_f of Object.keys(data[group_f]['weekdays'])){ // data[group_f] is not iterable
                         data[group_f]['weekdays'][weekday_f].pairs.forEach((pair_f)=> {
                             if (pair_f.name === false) return;
                             pair_f.name = pair_f.name.replace(/ {1,}/g,' ');

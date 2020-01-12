@@ -22,20 +22,18 @@ class ServerTime extends Date{
     }
 
     getDay() {
-        const now_day = super.getDay();
+        let now_day = super.getDay();
         return now_day === 0 ? 1 : now_day
     }
-    getNowDayWeek(){
+    getNowWeekday(){
         return pairs_days[this.getDay()];
     }
-    static getDayWeek(day){
-        if (typeof day !== 'number') return new TypeError('getDayWeek: mistake argument type');
-        if (day < 7){
-            return pairs_days[day];
-        } else {
-            return pairs_days[1];
-        }
+    static getWeekday(day){
+        if (typeof day !== 'number') return new TypeError('getWeekday: mistake argument type');
+        return pairs_days[day === 0 || day > 7 ? 1 : day]
     }
 }
+
+console.log(new ServerTime().getDay())
 
 module.exports = ServerTime;
