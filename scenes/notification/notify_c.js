@@ -1,4 +1,4 @@
-const SqlDB = require('../tools/sql_data');
+const SqlDB = require('../../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 

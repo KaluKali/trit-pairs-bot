@@ -34,6 +34,4 @@ class ServerTime extends Date{
     }
 }
 
-console.log(new ServerTime().getDay())
-
 module.exports = ServerTime;

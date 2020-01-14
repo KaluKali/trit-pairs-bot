@@ -12,17 +12,13 @@ exports.ReverseMarkup = function (reverse_markup) {
     }
 
     const buttons = {
-        notify:{text: 'Уведомления', color:'primary', action: function (ctx) {
+        notify_c:{text: 'Ежедневные', color:'primary', action: function (ctx) {
                 ctx.scene.leave();
-                return ctx.scene.enter('choice_notify');
+                ctx.scene.enter('notify_e_d')
             }},
-        group:{text: 'Группа', color:'primary', action:function (ctx) {
+        notify_e_d:{text: 'Изменения в расписании', color:'primary', action: function (ctx) {
                 ctx.scene.leave();
-                return ctx.scene.enter('group');
-            }},
-        account_data:{text: 'Персональные данные', action:function (ctx) {
-                ctx.scene.leave();
-                return ctx.scene.enter('erase_account_data');
+                ctx.scene.enter('notify_c')
             }},
         exit:{text: 'Выход', color:'negative', action: function (ctx) {
                 ctx.reply('Выберете один из вариантов:',null,reverse_markup);
@@ -31,7 +27,7 @@ exports.ReverseMarkup = function (reverse_markup) {
     };
 
 
-    return new Scene('settings',
+    return new Scene('choice_notify',
         (ctx) => {
             ctx.scene.next();
 
@@ -40,7 +36,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                 keyboard_list.push(Markup.button(buttons[k].text, buttons[k].color))
             }
 
-            ctx.reply('Что вы хотите настроить?', null, Markup
+            ctx.reply('Какие уведомления вы хотите настроить?', null, Markup
                 .keyboard(keyboard_list, {columns: 2}).oneTime()
             );
         },

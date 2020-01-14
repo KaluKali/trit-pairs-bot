@@ -57,12 +57,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                         ctx.reply('Технические шоколадки, успешно устраняем.');
                         return console.log(err);
                     }
-                    ctx.reply('Вы успешно настроили вашу группу.', null, Markup.keyboard([
-                        Markup.button('Расписание', 'positive'),
-                        Markup.button('Расписание на завтра', 'positive'),
-                        Markup.button('Настроить уведомления', 'primary'),
-                        Markup.button('Указать группу', 'primary'),
-                    ], {columns: 2}).oneTime());
+                    ctx.reply('Вы успешно настроили вашу группу.', null, reverse_markup);
                 });
             } else {
                 sql = `UPDATE ${process.env.DB_TABLE} SET user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
@@ -70,7 +65,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
                         return console.log(err);
-                    } else ctx.reply('Вы успешно настроили уведомления.', null, reverse_markup);
+                    } else ctx.reply('Вы успешно настроили группу.', null, reverse_markup);
                 });
             }
 

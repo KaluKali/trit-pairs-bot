@@ -5,92 +5,66 @@ const levenshtein = require('../tools/levenshtein');
 const server_time = new ServerTime();
 const trit_data = new TritData();
 
-class MessageParser {
-    // constructor(){}
+const MessageParser = function (text) {
+    this.args = text.toLowerCase()
+        .replace(/ {1,}/g,' ')
+        .split(' ');
+    // regxp: remove duplicate spaces
+    this.args.shift();
+};
+MessageParser.prototype.parse_find = async function () {
+    const params = {pair:'',group:-1,weekday:''};
+    const valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
 
-    async parse_find_arg(txt){
-        const params = {pair:'',group:-1,weekday:''};
-        const args = txt
-            .replace(/ {1,}/g,' ')
-            .split(' ');
-        // regxp: remove duplicate spaces
-        args.shift();
-        // struct: найди {1,2} {1} {3}
-        // 1: пара
-        // 2: № группы
-        // 3: день недели
-        let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
-        args.forEach((param)=>{
-            if (param==='на') return;
-            if (param.indexOf('групп')!== -1) return;
-            if (isNaN(+param)){
-                if(ServerTime.isWeekday(param)){
-                    return params.weekday = param;
-                } else {
-                    for (let day of ServerTime.Weekdays()){
-                        if (levenshtein(day,param) <= 2) return params.weekday = day;
-                    }
-                    return params.pair = `${params.pair} ${param}`;
-                }
+    this.args.forEach((param) => {
+        if (param === 'на') return;
+        if (param.indexOf('групп') !== -1) return;
+        if (isNaN(+param)) {
+            if (ServerTime.isWeekday(param)) {
+                return params.weekday = param;
             } else {
-                if (valid_groups.indexOf(+param) !== -1){
-                    params.group = +param;
-                } else params.pair = `${params.pair} ${param}`;
+                for (let day of ServerTime.Weekdays()) {
+                    if (levenshtein(day, param) <= 2) return params.weekday = day;
+                }
+                return params.pair = `${params.pair} ${param}`;
             }
-        });
-        params.pair = params.pair.trim();
-        return params;
-    }
-    async parse_pairs_day(txt){
-        const params = {group:-1,weekday:''};
-        const args = txt
-            .replace(/ {1,}/g,' ')
-            .split(' ');
-        // regxp: remove duplicate spaces
-        args.shift();
-        //struct: расписание {1,2} {2,3}
-        // 1 группа
-        // 2
-        // 3 день недели
-        let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
+        } else {
+            if (valid_groups.indexOf(+param) !== -1) {
+                params.group = +param;
+            } else params.pair = `${params.pair} ${param}`;
+        }
+    });
+    params.pair = params.pair.trim();
 
-        args.forEach((param)=>{
-            if (param==='на') return;
-            else if (param==='завтра') return params.weekday = ServerTime.getWeekday(server_time.getDay()+1);
-            else if(isNaN(+param)){
-                if (ServerTime.isWeekday(param)){
-                    params.weekday = ''+param;
-                } else {
-                    for (const day of ServerTime.Weekdays()){
-                        if (levenshtein(day,param) <= 2) return params.weekday = day;
-                    }
-                }
+    return params;
+};
+MessageParser.prototype.parse_pairs_day = async function () {
+    const params = {group: -1, weekday: '', weekday_quest: false};
+    //struct: расписание {1,2} {2,3}
+    // 1 группа
+    // 2
+    // 3 день недели
+    let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
+
+    this.args.forEach((param) => {
+        if (param === 'на') return;
+        else if (param.indexOf('недел') !== -1) return params.weekday_quest = true;
+        else if (param.indexOf('завтр') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
+        else if (isNaN(+param)) {
+            if (ServerTime.isWeekday(param)) {
+                params.weekday = '' + param;
             } else {
-                if (valid_groups.indexOf(+param) !== -1){
-                    params.group = +param;
+                for (const day of ServerTime.Weekdays()) {
+                    if (levenshtein(day, param) <= 2) return params.weekday = day;
                 }
             }
-        });
-        return params;
-    }
-    parse_settings(txt){
-        const params = {notify:false,change_group:false,settings:false};
-        const args = txt
-            .replace(/ {1,}/g,' ')
-            .split(' ');
-        // regxp: remove duplicate spaces
-        args.shift();
-        //struct: настроить {1}
-        // 1 уведомления,группа
-
-        args.forEach((param)=>{
-            if (param.toLowerCase().indexOf('указать') !== -1) return params.change_group=true;
-            else if (param.toLowerCase().indexOf('уведомлен') !== -1) return params.notify =true;
-            else if (param.toLowerCase().indexOf('групп') !== -1) return params.change_group=true;
-            else if (param.toLowerCase().indexOf('бот') !== -1) return params.settings=true;
-        });
-        return params;
-    }
-}
+        } else {
+            if (valid_groups.indexOf(+param) !== -1) {
+                params.group = +param;
+            }
+        }
+    });
+    return params;
+};
 
 module.exports = MessageParser;

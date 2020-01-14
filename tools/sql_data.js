@@ -19,14 +19,15 @@ const SqlDB = function () {
 SqlDB.prototype.getData = function(sql,values){
     return new Promise(resolve =>{
         this.connection.query(sql,values,(err,[data])=>{
-            resolve(data);
+            if (err) resolve(err);
+            else resolve(data);
         });
     });
 };
 SqlDB.prototype.callback = function(sql,value,func){
     this.connection.query(sql,value,func);
 };
-SqlDB.prototype.execute = async function(sql,value){
+SqlDB.prototype.execute = function(sql,value){
     this.connection.query(sql,value,(err)=>{
         console.log(`Error in SqlDB class:${err}`);
     })
