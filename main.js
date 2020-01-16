@@ -58,6 +58,7 @@ bot.command('найди', async (ctx)=>{
     ctx_methods(reverse_menu).find_pairs(ctx,obj);
 });
 bot.command('настройки', (ctx) => {
+    // todo изучи step
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{

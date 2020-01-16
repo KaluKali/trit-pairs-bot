@@ -34,7 +34,7 @@ const settings = function (reverse_markup) {
                 keyboard_list.push(Markup.button(buttons[k].text, buttons[k].color))
             }
 
-            ctx.reply('Я не знаю такой комманды, хотите получить помощь по функциям?', null, Markup
+            ctx.reply('Выберите день недели:', null, Markup
                 .keyboard(keyboard_list, {columns: 2}).oneTime()
             );
         },
