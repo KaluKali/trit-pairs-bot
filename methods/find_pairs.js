@@ -1,5 +1,3 @@
-const Markup = require('node-vk-bot-api/lib/markup');
-
 const table = require('text-table');
 
 const TritData = require('../trit_data');
@@ -28,27 +26,19 @@ const abbreviation = [
 function isAbbreviation(txt){
     const txt_u = txt.toLowerCase();
     for (let abb of abbreviation){
-        let abb_u = abb.toLowerCase();
-        if (abb_u.length >3){
-            if (levenshtein(txt_u,abb_u) <=2 && abb_u.indexOf(txt_u) === -1) return abb_u;
-            else if (abb_u.indexOf(txt_u) !== -1){ return abb_u;}
+        let abb_l_c = abb.toLowerCase();
+        if (abb_l_c.length >3){
+            if (levenshtein(txt_u,abb_l_c) <=2 && abb_l_c.indexOf(txt_u) === -1) return abb_l_c;
+            else if (abb_l_c.indexOf(txt_u) !== -1){ return abb_l_c;}
         } else {
-            if (levenshtein(txt_u,abb_u) <=1 && abb_u.indexOf(txt_u) === -1) return abb_u;
-            else if (abb_u.indexOf(txt_u) !== -1){ return abb_u;}
+            if (levenshtein(txt_u,abb_l_c) <=1 && abb_l_c.indexOf(txt_u) === -1) return abb_l_c;
+            else if (abb_l_c.indexOf(txt_u) !== -1){ return abb_l_c;}
         }
     }
     return false;
 }
 
-exports.ReverseMarkup = (reverse_markup) => {
-    if (typeof reverse_markup === 'undefined') {
-        reverse_markup = Markup.keyboard([
-            Markup.button('Расписание', 'positive'),
-            Markup.button('Расписание на завтра', 'positive'),
-            Markup.button('Настроить уведомления', 'primary'),
-            Markup.button('Указать группу', 'primary'),
-        ], {columns: 2}).oneTime()
-    }
+const find_pairs = (reverse_markup, table_style) => {
     return async (ctx,obj)=>{
         if (typeof obj !== 'undefined' || typeof ctx !== 'undefined'){
             if (obj.pair === ""){
@@ -114,10 +104,12 @@ exports.ReverseMarkup = (reverse_markup) => {
                 if (s_response.length > 24){
                     return ctx.reply(`Найдено слишком много результатов!`,null,reverse_markup);
                 } else {
-                    const t = table(s_response, { align: [ 'r', 'c', 'l' ], hsep: ' || ' });
+                    const t = table(s_response, table_style);
                     return ctx.reply(`Список пар, найденных на ${weekday === -1 ? 'всю неделю' : weekday} у ${group === -1 ? 'всех групп' : `группы ${group}`}:\n\n${t}`,null,reverse_markup);
                 }
             });
         });
     }
 };
+
+module.exports = find_pairs;

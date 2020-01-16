@@ -4,16 +4,7 @@ const Markup = require('node-vk-bot-api/lib/markup');
 
 const sql_db = new SqlDB();
 
-exports.ReverseMarkup = function (reverse_markup) {
-    if (typeof reverse_markup === 'undefined') {
-        reverse_markup = Markup.keyboard([
-            Markup.button('Расписание', 'positive'),
-            Markup.button('Расписание на завтра', 'positive'),
-            Markup.button('Настроить уведомления', 'primary'),
-            Markup.button('Указать группу', 'primary'),
-        ], {columns: 2}).oneTime()
-    }
-
+const notify_c = function (reverse_markup) {
     return new Scene('notify_c',
         (ctx) => {
             ctx.scene.next();
@@ -41,3 +32,5 @@ exports.ReverseMarkup = function (reverse_markup) {
             ctx.scene.leave();
         });
 };
+
+module.exports = notify_c;

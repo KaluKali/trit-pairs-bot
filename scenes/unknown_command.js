@@ -1,28 +1,32 @@
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
+const hello_carousel = require('../carousels/carousel');
 
 const settings = function (reverse_markup) {
     const buttons = {
-        notify:{text: 'Уведомления', color:'primary', action: function (ctx) {
-                ctx.scene.leave();
-                return ctx.scene.enter('choice_notify');
+        yes:{text: 'Да', color:'positive', action: function (ctx) {
+                if (typeof ctx.client_info.carousel === 'undefined'){
+                    ctx.reply('Выберите один из вариантов:',null,reverse_markup);
+                    return ctx.scene.leave();
+                } else {
+                    ctx.bot.execute('messages.send', {
+                        user_id: ctx.message.from_id,
+                        message: 'Возможности бота:',
+                        random_id: Math.floor(Math.random() * 1000),
+                        template: JSON.stringify(hello_carousel)
+                    }).catch((err) => {
+                        console.log('In scene "unknown_command error: "', err);
+                    });
+                    return ctx.scene.leave();
+                }
             }},
-        group:{text: 'Группа', color:'primary', action:function (ctx) {
-                ctx.scene.leave();
-                return ctx.scene.enter('group');
-            }},
-        account_data:{text: 'Персональные данные', action:function (ctx) {
-                ctx.scene.leave();
-                return ctx.scene.enter('erase_account_data');
-            }},
-        exit:{text: 'Выход', color:'negative', action: function (ctx) {
+        no:{text: 'Нет', color:'negative', action: function (ctx) {
                 ctx.reply('Выберите один из вариантов:',null,reverse_markup);
                 return ctx.scene.leave();
             }},
     };
 
-
-    return new Scene('settings',
+    return new Scene('unknown_command',
         (ctx) => {
             ctx.scene.next();
 
@@ -31,7 +35,7 @@ const settings = function (reverse_markup) {
                 keyboard_list.push(Markup.button(buttons[k].text, buttons[k].color))
             }
 
-            ctx.reply('Что вы хотите настроить?', null, Markup
+            ctx.reply('Я не знаю такой комманды, хотите получить помощь по функциям?', null, Markup
                 .keyboard(keyboard_list, {columns: 2}).oneTime()
             );
         },

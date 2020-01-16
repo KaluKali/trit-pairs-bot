@@ -1,4 +1,3 @@
-const Markup = require('node-vk-bot-api/lib/markup');
 const table = require('text-table');
 
 const TritData = require('../trit_data');
@@ -6,21 +5,10 @@ const SqlDB = require('../tools/sql_data');
 
 const trit_data = new TritData();
 const sql_db = new SqlDB();
+const getUserInfo = require('../tools/user_info');
 
-async function getUserInfo(vk_id) {
-    return sql_db.getData(`SELECT * FROM ${process.env.DB_TABLE} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
-}
 
-exports.ReverseMarkup = function (reverse_markup) {
-    if (typeof reverse_markup === 'undefined') {
-        reverse_markup = Markup.keyboard([
-            Markup.button('Расписание', 'positive'),
-            Markup.button('Расписание на завтра', 'positive'),
-            Markup.button('Настроить уведомления', 'primary'),
-            Markup.button('Указать группу', 'primary'),
-        ], {columns: 2}).oneTime()
-    }
-
+const mailing = (reverse_markup,table_style) => {
     return async (weekday, bot)=>{
         const sql = `SELECT vk_id FROM ${process.env.DB_TABLE}`;
         sql_db.callback(sql, (err, results) => { // получаем список всех юзеров из вк
@@ -51,7 +39,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                         elem.unshift(i+1);
                     });
 
-                    const t = table(data_day_s, { align: [ 'l', 'c', 'l' ], hsep: ' || ' });
+                    const t = table(data_day_s, table_style);
                     // формируем таблицу end
                     const send_users = g_users.filter(user => user.user_group === group && user.notify === 1 && user.notify_e_d === 1);
                     // сортируем по группе, параметрам уведомлений которые выставлены у юзеров
@@ -66,3 +54,5 @@ exports.ReverseMarkup = function (reverse_markup) {
         });
     }
 };
+
+module.exports = mailing;

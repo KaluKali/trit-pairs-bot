@@ -1,16 +1,7 @@
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 
-exports.ReverseMarkup = function (reverse_markup) {
-    if (typeof reverse_markup === 'undefined') {
-        reverse_markup = Markup.keyboard([
-            Markup.button('Расписание', 'positive'),
-            Markup.button('Расписание на завтра', 'positive'),
-            Markup.button('Настроить уведомления', 'primary'),
-            Markup.button('Указать группу', 'primary'),
-        ], {columns: 2}).oneTime()
-    }
-
+const choice_notify = function (reverse_markup) {
     const buttons = {
         notify_c:{text: 'Ежедневные', color:'primary', action: function (ctx) {
                 ctx.scene.leave();
@@ -21,7 +12,7 @@ exports.ReverseMarkup = function (reverse_markup) {
                 ctx.scene.enter('notify_c')
             }},
         exit:{text: 'Выход', color:'negative', action: function (ctx) {
-                ctx.reply('Выберете один из вариантов:',null,reverse_markup);
+                ctx.reply('Выберите один из вариантов:',null,reverse_markup);
                 return ctx.scene.leave();
             }},
     };
@@ -44,7 +35,7 @@ exports.ReverseMarkup = function (reverse_markup) {
             let buttons_opt;
             if (typeof ctx.message.payload !== 'undefined') buttons_opt = JSON.parse(ctx.message.payload);
             else {
-                ctx.reply('Выберете один из вариантов:',null,reverse_markup);
+                ctx.reply('Выберите один из вариантов:',null,reverse_markup);
                 return ctx.scene.leave();
             }
 
@@ -53,3 +44,5 @@ exports.ReverseMarkup = function (reverse_markup) {
             }
         });
 };
+
+module.exports = choice_notify;

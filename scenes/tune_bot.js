@@ -2,24 +2,12 @@ const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 const TritData = require('../trit_data');
+const getUserInfo = require('../tools/user_info');
 
 const sql_db = new SqlDB();
 const trit_data = new TritData();
 
-
-function getUserInfo(vk_id) {
-    return sql_db.getData(`SELECT * FROM ${process.env.DB_TABLE} WHERE vk_id LIKE ${vk_id} LIMIT 1`,[]);
-}
-exports.ReverseMarkup = function (reverse_markup) {
-    if (typeof reverse_markup === 'undefined'){
-        reverse_markup = Markup.keyboard([
-            Markup.button('Расписание', 'positive'),
-            Markup.button('Расписание на завтра', 'positive'),
-            Markup.button('Настроить уведомления', 'primary'),
-            Markup.button('Указать группу', 'primary'),
-        ], { columns:2 }).oneTime()
-    }
-
+const tune_bot = function (reverse_markup) {
     return new Scene('tune_bot',
         (ctx) => {
             ctx.scene.next();
@@ -113,3 +101,4 @@ exports.ReverseMarkup = function (reverse_markup) {
         }
     );
 };
+module.exports = tune_bot;

@@ -3,17 +3,7 @@ const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 
 const sql_db = new SqlDB();
-
-exports.ReverseMarkup = function (reverse_markup) {
-    if (typeof reverse_markup === 'undefined') {
-        reverse_markup = Markup.keyboard([
-            Markup.button('Расписание', 'positive'),
-            Markup.button('Расписание на завтра', 'positive'),
-            Markup.button('Настроить уведомления', 'primary'),
-            Markup.button('Указать группу', 'primary'),
-        ], {columns: 2}).oneTime()
-    }
-
+const erase_account_data = function (reverse_markup) {
     const buttons = {
         erase:{text: 'Удаление из системы', color:'negative', action: function (ctx) {
                 ctx.reply('Вы уверены?',null,Markup.keyboard(
@@ -21,10 +11,11 @@ exports.ReverseMarkup = function (reverse_markup) {
                         Markup.button('Да', 'negative'),
                         Markup.button('Нет', 'positive'),
                     ]
-                ))
+                ).oneTime());
+                ctx.scene.next();
             }},
         exit:{text: 'Выход', color:'negative', action: function (ctx) {
-                ctx.reply('Выберете один из вариантов:',null,reverse_markup);
+                ctx.reply('Выберите один из вариантов:',null,reverse_markup);
                 return ctx.scene.leave();
             }},
     };
@@ -51,8 +42,6 @@ exports.ReverseMarkup = function (reverse_markup) {
             for (let k of Object.keys(buttons)){
                 if (buttons[k].text === buttons_opt.button)  buttons[k].action(ctx);
             }
-
-            ctx.scene.next();
         },
         (ctx) => {
             let buttons_opt;
@@ -73,3 +62,4 @@ exports.ReverseMarkup = function (reverse_markup) {
             ctx.scene.leave();
         });
 };
+module.exports = erase_account_data;
