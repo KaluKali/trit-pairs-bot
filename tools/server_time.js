@@ -8,6 +8,7 @@ const pairs_days = [
     'суббота'
 ];
 
+
 class ServerTime extends Date{
     constructor(){
         super();
@@ -18,7 +19,7 @@ class ServerTime extends Date{
         return pairs_days.indexOf(day) !== -1;
     }
     static Weekdays(){
-        return pairs_days;
+        return pairs_days.slice();
     }
 
     getDay() {

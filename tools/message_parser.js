@@ -39,7 +39,7 @@ MessageParser.prototype.parse_find = async function () {
     return params;
 };
 MessageParser.prototype.parse_pairs_day = async function () {
-    const params = {group: -1, weekday: '', weekday_quest: false};
+    const params = {group: -1, weekday: ''};
     //struct: расписание {1,2} {2,3}
     // 1 группа
     // 2
@@ -48,8 +48,8 @@ MessageParser.prototype.parse_pairs_day = async function () {
 
     this.args.forEach((param) => {
         if (param === 'на') return;
-        else if (param.indexOf('недел') !== -1) return params.weekday_quest = true;
-        else if (param.indexOf('завтр') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
+        else if (param.indexOf('завтр')!==-1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
+        else if (param.indexOf('сегодн')!==-1) return params.weekday = ServerTime.getWeekday(server_time.getDay());
         else if (isNaN(+param)) {
             if (ServerTime.isWeekday(param)) {
                 params.weekday = '' + param;
