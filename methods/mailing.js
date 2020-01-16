@@ -2,10 +2,10 @@ const table = require('text-table');
 
 const TritData = require('../trit_data');
 const SqlDB = require('../tools/sql_data');
+const getUserInfo = require('../tools/user_info');
 
 const trit_data = new TritData();
 const sql_db = new SqlDB();
-const getUserInfo = require('../tools/user_info');
 
 
 const mailing = (reverse_markup,table_style) => {

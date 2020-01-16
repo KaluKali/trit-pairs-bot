@@ -26,15 +26,7 @@ const ctx_scenes = require('./scenes/index');
 const ctx_methods = require('./methods/index');
 const white_list = ['расписание','найди','помощь','настроить','привет','меню','неделя'];
 
-schedule.scheduleJob(new schedule.RecurrenceRule(
-    null,
-    null,
-    null,
-    new schedule.Range(0,6),
-    7,//hour
-    0,//minute
-    0,//second
-), function(){
+schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
     return ctx_methods(reverse_menu).mailing(server_time.getNowWeekday(),bot);
 });
 
