@@ -27,6 +27,11 @@ const ctx_methods = require('./methods/index');
 const white_list = ['расписание','найди','помощь','настроить','привет','меню','неделя'];
 
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
+    bot.stop();
+    bot.start();
+    bot.startPolling(function () {
+        console.log('Bot restarted.')
+    });
     return ctx_methods(reverse_menu).mailing(server_time.getNowWeekday(),bot);
 });
 
@@ -76,9 +81,8 @@ bot.command('расписание', async (ctx)=>{
         ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
     }
 });
-
 bot.on((ctx) => {
-    ctx.scene.enter('unknown_command')
+    ctx.scene.enter('unknown_command',0)
 });
 bot.startPolling(() => {
     console.log('Bot started.')
