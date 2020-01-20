@@ -12,7 +12,7 @@ const mailing = (reverse_markup,table_style) => {
     return async (weekday, bot)=>{
         const sql = `SELECT vk_id FROM ${process.env.DB_TABLE}`;
         sql_db.callback(sql, (err, results) => { // получаем список всех юзеров из вк
-            if(err) console.log(`p_D_to_all Error: ${err}`);
+            if(err) console.error(`mailing Error: ${err}`);
             const users = [];
             for(let i of results) users.push(i.vk_id); // формируем список юзеров
             trit_data.getData(async (data) => {
@@ -26,17 +26,19 @@ const mailing = (reverse_markup,table_style) => {
                 let uniq_exec_groups = [...new Set(exec_groups)];
                 // сортируем только по уникальным значениям, получая те группы которым нужно сформировать таблицу расписания
                 uniq_exec_groups.forEach((group) => {
-                    const data_day_s = [];
                     // формируем таблицу
+                    const data_day_s = [];
+                    let i_pair = 1;
                     data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
-                        if (i < 4) {
-                            let p = [pair.name !== false ? pair.name : '-', pair.room !== false ? pair.room : '-'];
-                            data_day_s.push(p, p.slice());
+                        if (i < 4){ // Pair limit
+                            if (pair.room === false) pair.room = '-';
+                            if (pair.name === false) pair.name = '-';
+                            data_day_s.push(
+                                [i_pair, TritData.PairsTime()[i_pair-1], pair.room, pair.name],
+                                [i_pair+1, TritData.PairsTime()[i_pair], pair.room, pair.name]
+                            );
+                            i_pair+=2;
                         }
-                    });
-                    data_day_s.forEach((elem,i) => {
-                        elem.push(TritData.PairsTime()[i]);
-                        elem.unshift(i+1);
                     });
 
                     const t = table(data_day_s, table_style);

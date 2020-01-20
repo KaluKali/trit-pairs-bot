@@ -29,10 +29,10 @@ const white_list = ['расписание','найди','помощь','наст
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
     bot.stop();
     bot.start();
-    bot.startPolling(function () {
+    bot.startPolling(() => {
         console.log('Bot restarted.')
     });
-    return ctx_methods(reverse_menu).mailing(server_time.getNowWeekday(),bot);
+    return ctx_methods(reverse_menu, ).mailing(server_time.getNowWeekday(),bot);
 });
 
 bot.use(new Session().middleware());

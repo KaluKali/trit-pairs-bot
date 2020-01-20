@@ -20,16 +20,17 @@ const pairs_now_day = (reverse_markup, table_style) => {
 
         trit_data.getData( (data) => {
             const data_day_s = [];
-
+            let i_pair = 1;
             data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
                 if (i < 4){ // Pair limit
-                    let p = [pair.name !== false ? pair.name : '-', pair.room !== false ? pair.room : '-'];
-                    data_day_s.push(p,p.slice());
+                    if (pair.room === false) pair.room = '-';
+                    if (pair.name === false) pair.name = '-';
+                    data_day_s.push(
+                        [i_pair, TritData.PairsTime()[i_pair-1], pair.room, pair.name],
+                        [i_pair+1, TritData.PairsTime()[i_pair], pair.room, pair.name]
+                    );
+                    i_pair+=2;
                 }
-            });
-            data_day_s.forEach((elem,i) => {
-                elem.push(TritData.PairsTime()[i]);
-                elem.unshift(i+1);
             });
             const t = table(data_day_s, table_style);
             ctx.reply(`Список уроков для ${group} группы на ${weekday}.\n\n${t.toString()}`,null,reverse_markup);
