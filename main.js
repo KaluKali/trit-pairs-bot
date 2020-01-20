@@ -14,7 +14,6 @@ const Message = require('./tools/message_parser');
 const levenshtein = require('./tools/levenshtein');
 // tools
 const server_time = new ServerTime();
-const getUserInfo = require('./tools/user_info');
 // resource
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание на сегодня', 'positive'),
@@ -67,19 +66,8 @@ bot.command('настройки', (ctx) => {
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
-    const user_info = await getUserInfo(ctx.message.from_id);
     const parsed_message = await new Message(ctx.message.text).parse_pairs_day();
-
-    if (parsed_message.group === -1){
-        if (typeof user_info === 'undefined'){
-            ctx.scene.enter('group');
-        } else {
-            parsed_message.group = user_info.user_group;
-            ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
-        }
-    } else {
-        ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
-    }
+    ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
 });
 bot.on((ctx) => {
     ctx.scene.enter('unknown_command',0)

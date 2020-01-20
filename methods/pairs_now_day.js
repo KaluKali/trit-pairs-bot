@@ -2,6 +2,7 @@ const table = require('text-table');
 
 const ServerTime = require('../tools/server_time');
 const TritData = require('../trit_data');
+const getUserInfo = require('../tools/user_info');
 
 const server_time = new ServerTime();
 const trit_data = new TritData();
@@ -11,8 +12,14 @@ const pairs_now_day = (reverse_markup, table_style) => {
         if (typeof ctx === 'undefined' || typeof obj === 'undefined'){
             return new Error('pairs_Day: Argument error');
         }
-        if (obj.group === 0){
-            return ctx.reply('Вы не указали пару или не настроили бота! Напиши мне "помощь" для получения справки по функциям!')
+
+        const user_info = await getUserInfo(ctx.message.from_id);
+        if (obj.group === -1){
+            if (typeof user_info === 'undefined'){
+                return ctx.scene.enter('group');
+            } else {
+                obj.group = user_info.user_group;
+            }
         }
 
         const weekday = obj.weekday !== "" ? obj.weekday : server_time.getNowWeekday();
