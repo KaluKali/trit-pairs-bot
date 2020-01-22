@@ -20,7 +20,7 @@ const find_cabinet = (reverse_markup, table_style) => {
                         for (let iii of Object.keys(data[i]['weekdays'][ii])){
                             for (let iiii of data[i]['weekdays'][ii]['pairs']){
                                 if (iiii['room'] && iiii['room'].indexOf(cabinet)!== -1){
-                                    cabs.push([iiii['room'],iiii['name']]);
+                                    cabs.push([iiii['room'], i, ii, iiii['name']]);
                                 }
                             }
                         }
@@ -28,7 +28,7 @@ const find_cabinet = (reverse_markup, table_style) => {
                 } else {
                     for (let iiii of data[i]['weekdays'][weekday]['pairs']){
                         if (iiii['room'] && iiii['room'].indexOf(cabinet)!== -1){
-                            cabs.push([iiii['room'],iiii['name']]);
+                            cabs.push([iiii['room'], i,iiii['name']]);
                         }
                     }
                 }
