@@ -61,6 +61,10 @@ bot.command('найди', async (ctx)=>{
     let obj = await new Message(ctx.message.text).parse_find();
     ctx_methods(reverse_menu).find_pairs(ctx,obj);
 });
+bot.command('кабинет', async (ctx)=>{
+    let obj = await new Message(ctx.message.text).parse_cabinet();
+    ctx_methods(reverse_menu).find_cabinet(ctx,obj);
+});
 bot.command('настройки', (ctx) => {
     // todo изучи step
     ctx.scene.enter('settings')

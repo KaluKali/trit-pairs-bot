@@ -13,6 +13,7 @@ const methods = function (reverse_markup,table_style) {
         pairs_day:require('./pairs_now_day')(reverse_markup,table_style),
         find_pairs:require('./find_pairs')(reverse_markup,table_style),
         mailing:require('./mailing')(reverse_markup,table_style),
+        find_cabinet:require('./find_cabinet')(reverse_markup,table_style),
     }
 };
 

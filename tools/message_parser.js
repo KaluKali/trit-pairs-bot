@@ -66,5 +66,23 @@ MessageParser.prototype.parse_pairs_day = async function () {
     });
     return params;
 };
+MessageParser.prototype.parse_cabinet = function (){
+    const params = {cab: '', weekday: ''};
+    //struct: кабинет {1} {2}
+    // 1 номер кабинета
+    // 2 день недели
+
+    this.args.forEach((param) => {
+        if (ServerTime.isWeekday(param)) {
+            return params.weekday = param;
+        } else {
+            for (let day of ServerTime.Weekdays()) {
+                if (levenshtein(day, param) <= 2) return params.weekday = day;
+            }
+            return params.cab = param
+        }
+    });
+    return params;
+};
 
 module.exports = MessageParser;

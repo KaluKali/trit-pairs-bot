@@ -8,7 +8,7 @@ const SqlDB = function () {
         password: process.env.DB_PASS
     });
     this.connection.connect(function(err){
-        if (err) return Error("Ошибка подключения к MySQL: " + err.message)
+        if (err) return Error("MAIN Ошибка подключения к MySQL: " + err.message)
     });
 };
 
@@ -16,7 +16,7 @@ SqlDB.prototype.getData = function(sql,values){
     return new Promise(resolve =>{
         this.connection.connect(function (err) {
             if (err) {
-                console.error("Ошибка подключения к MySQL: " + err.message);
+                console.error("GETDATA Ошибка подключения к MySQL: " + err.message);
                 return resolve(err);
             }
         });
@@ -28,13 +28,13 @@ SqlDB.prototype.getData = function(sql,values){
 };
 SqlDB.prototype.callback = function(sql,value,func){
     this.connection.connect(function (err) {
-        if (err) return console.error("Ошибка подключения к MySQL: " + err.message);
+        if (err) return console.error("CALLBACK Ошибка подключения к MySQL: " + err.message);
     });
     this.connection.query(sql,value,func);
 };
 SqlDB.prototype.execute = function(sql,value){
     this.connection.connect(function (err) {
-        if (err) return console.error("Ошибка подключения к MySQL: " + err.message);
+        if (err) return console.error("EXEC Ошибка подключения к MySQL: " + err.message);
     });
     this.connection.query(sql,value,(err)=>{
         console.log(`Error in SqlDB class:${err}`);
