@@ -16,26 +16,24 @@ const find_cabinet = (reverse_markup, table_style) => {
             let cabs=[];
             for (let i of Object.keys(data)){
                 if (weekday === ""){
-                    for (let ii of Object.keys(data[i]['weekdays'])){
-                        for (let iii of Object.keys(data[i]['weekdays'][ii])){
-                            for (let iiii of data[i]['weekdays'][ii]['pairs']){
-                                if (iiii['room'] && iiii['room'].indexOf(cabinet)!== -1){
-                                    cabs.push([iiii['room'], i, ii, iiii['name']]);
-                                }
+                    for (let wd of Object.keys(data[i]['weekdays'])){
+                        for (let item of data[i]['weekdays'][wd]['pairs']){
+                            if (item['room'] && item['room'].indexOf(cabinet)!== -1){
+                                cabs.push([item['room'], i, wd, item['name']]);
                             }
                         }
                     }
                 } else {
-                    for (let iiii of data[i]['weekdays'][weekday]['pairs']){
-                        if (iiii['room'] && iiii['room'].indexOf(cabinet)!== -1){
-                            cabs.push([iiii['room'], i,iiii['name']]);
+                    for (let item of data[i]['weekdays'][weekday]['pairs']){
+                        if (item['room'] && item['room'].indexOf(cabinet)!== -1){
+                            cabs.push([item['room'], i,item['name']]);
                         }
                     }
                 }
             }
 
             const t = table(cabs,table_style);
-            ctx.reply(`Список уроков для кабинета №${cabinet} на ${weekday !== "" ? weekday : "всю неделю"}.\n\n${t.toString()}`,null,reverse_markup);
+            ctx.reply(`Список пар для кабинета №${cabinet} на ${weekday !== "" ? weekday : "всю неделю"}.\n\n${t.toString()}`,null,reverse_markup);
         });
     }
 };

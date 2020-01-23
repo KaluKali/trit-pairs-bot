@@ -23,7 +23,7 @@ const reverse_menu = Markup.keyboard([
 ], { columns:2 }).oneTime();
 const ctx_scenes = require('./scenes/index');
 const ctx_methods = require('./methods/index');
-const white_list = ['расписание','найди','помощь','настроить','привет','меню','неделя'];
+const white_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
 
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
     bot.stop();
