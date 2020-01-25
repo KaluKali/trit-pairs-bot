@@ -1,6 +1,6 @@
 const table = require('text-table');
 
-const TritData = require('../trit_data');
+const TritData = require('../tools/trit_data');
 
 const levenshtein = require('../tools/levenshtein');
 // const bigrams = require('../tools/bigrams')

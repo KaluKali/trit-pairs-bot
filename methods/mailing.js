@@ -1,6 +1,6 @@
 const table = require('text-table');
 
-const TritData = require('../trit_data');
+const TritData = require('../tools/trit_data');
 const SqlDB = require('../tools/sql_data');
 const getUserInfo = require('../tools/user_info');
 
@@ -40,7 +40,6 @@ const mailing = (reverse_markup,table_style) => {
                             i_pair+=2;
                         }
                     });
-
                     const t = table(data_day_s, table_style);
                     // формируем таблицу end
                     const send_users = g_users.filter(user => user.user_group === group && user.notify === 1 && user.notify_e_d === 1);

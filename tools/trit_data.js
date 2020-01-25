@@ -1,4 +1,4 @@
-const api = require('./tools/api');
+const api = require('./api');
 const fs = require('fs');
 
 const now_date = new Date();

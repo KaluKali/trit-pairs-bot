@@ -1,4 +1,4 @@
-const TritData = require('../trit_data');
+const TritData = require('./trit_data');
 const ServerTime = require('./server_time');
 const levenshtein = require('../tools/levenshtein');
 

@@ -1,4 +1,4 @@
-const pairs_days = [
+const pairs_days = [ // 0-6 where 0-"воскресение"
     'воскресенье',
     'понедельник',
     'вторник',
@@ -13,7 +13,6 @@ class ServerTime extends Date{
     constructor(){
         super();
     }
-
     static isWeekday(day){
         if (typeof day != 'string') return new TypeError('Argument isValidWeekDay is string.');
         return pairs_days.indexOf(day) !== -1;
@@ -21,9 +20,9 @@ class ServerTime extends Date{
     static Weekdays(){
         return pairs_days.slice();
     }
-
     getDay() {
-        let now_day = super.getDay();
+        this.setTime(ServerTime.now());
+        let now_day = super.getDate();
         return now_day === 0 ? 1 : now_day
     }
     getNowWeekday(){

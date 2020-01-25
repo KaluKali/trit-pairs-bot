@@ -1,7 +1,7 @@
 const table = require('text-table');
 
 const ServerTime = require('../tools/server_time');
-const TritData = require('../trit_data');
+const TritData = require('../tools/trit_data');
 const getUserInfo = require('../tools/user_info');
 
 const server_time = new ServerTime();

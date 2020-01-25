@@ -14,40 +14,29 @@ const SqlDB = function () {
 
 SqlDB.prototype.getData = function(sql,values){
     return new Promise(resolve =>{
-        this.connection.connect(function (err) {
+        this.connection.ping((err)=>{
             if (err) {
-                this._reopen();
-                console.error("GETDATA Ошибка подключения к MySQL: " + err.message);
+                this.reopen();
+                resolve(err);
             }
-        });
-        this.connection.query(sql,values,(err,[data])=>{
-            if (err) resolve(err);
-            else resolve(data);
+            this.connection.query(sql,values,(err,[data])=>resolve(data));
         });
     });
 };
 SqlDB.prototype.callback = function(sql,value,func){
-    this.connection.connect(function (err) {
-        if (err) {
-            this._reopen();
-            console.error("CALLBACK Ошибка подключения к MySQL: " + err.message);
-        }
+    this.connection.ping((err)=>{
+        if (err) this.reopen();
+        this.connection.query(sql,value,func);
     });
-    this.connection.query(sql,value,func);
 };
 SqlDB.prototype.execute = function(sql,value){
-    this.connection.connect(function (err) {
-        if (err){
-            this._reopen();
-            console.error("EXEC Ошибка подключения к MySQL: " + err.message);
-        }
-    });
-    this.connection.query(sql,value,(err)=>{
-        console.log(`Error in SqlDB class:${err}`);
+    this.connection.ping((err)=>{
+        if (err) this.reopen();
+        this.connection.query(sql,value);
     });
 };
-SqlDB.prototype._reopen = function(){
-    this.connection.destroy();
+SqlDB.prototype.reopen = function(){
+    this.connection.close();
     this.connection = mysql.createConnection({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
@@ -55,7 +44,7 @@ SqlDB.prototype._reopen = function(){
         password: process.env.DB_PASS,
     });
     this.connection.connect(function(err){
-        if (err) return Error("MAIN Ошибка подключения " + err.message);
+        if (err) return Error("REOPEN Ошибка подключения " + err.message);
         else console.log('reopened connection to mysql-db');
     });
 };

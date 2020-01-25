@@ -1,7 +1,7 @@
 const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
-const TritData = require('../trit_data');
+const TritData = require('../tools/trit_data');
 const getUserInfo = require('../tools/user_info');
 
 const sql_db = new SqlDB();

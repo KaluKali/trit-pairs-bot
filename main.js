@@ -23,25 +23,30 @@ const reverse_menu = Markup.keyboard([
 ], { columns:2 }).oneTime();
 const ctx_scenes = require('./scenes/index');
 const ctx_methods = require('./methods/index');
-const white_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
-
+const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
+// jobs
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
-    bot.stop();
-    bot.start();
-    bot.startPolling(() => {
-        console.log('Bot restarted.')
-    });
-    return ctx_methods(reverse_menu, ).mailing(server_time.getNowWeekday(),bot);
+    return ctx_methods(reverse_menu).mailing(server_time.getNowWeekday(),bot);
 });
-
+schedule.scheduleJob('00 00 00 * * 0-6', ()=>{
+    bot.stop();
+    console.log('Timeout to restart bot is set.');
+    setTimeout(function () {
+        bot.start();
+        bot.startPolling(() => {
+            console.log('Bot restarted.')
+        });
+    }, 30000);
+});
+// scenes
 bot.use(new Session().middleware());
 bot.use(new Stage(...ctx_scenes(reverse_menu)).middleware());
-
+// use's and commands
 bot.use((ctx,next)=>{
     ctx.message.payload = typeof ctx.message.payload !== 'undefined' ? JSON.parse(ctx.message.payload) : [];
 
     const message = ctx.message.text.split(' ');
-    for (let i of white_list){
+    for (let i of leven_list){
         if (levenshtein(i, message[0]) <= 2){
             message.shift();
             message.unshift(i);
@@ -53,6 +58,7 @@ bot.use((ctx,next)=>{
 });
 bot.command('поиск пары', (ctx)=>{
     ctx.reply("Напиши мне \"найди {пара}\"");
+    ctx.reply('')
 });
 bot.command('неделя', (ctx)=>{
     ctx.scene.enter('week')
