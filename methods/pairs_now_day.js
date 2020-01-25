@@ -21,8 +21,7 @@ const pairs_now_day = (reverse_markup, table_style) => {
                 obj.group = user_info.user_group;
             }
         }
-
-        const weekday = obj.weekday !== "" ? obj.weekday : server_time.getNowWeekday();
+        const weekday = obj.weekday !== "" ? obj.weekday : server_time.getWeekday();
         const group = obj.group;
 
         trit_data.getData( (data) => {

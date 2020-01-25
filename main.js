@@ -26,7 +26,7 @@ const ctx_methods = require('./methods/index');
 const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
 // jobs
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
-    return ctx_methods(reverse_menu).mailing(server_time.getNowWeekday(),bot);
+    return ctx_methods(reverse_menu).mailing(server_time.getWeekday(),bot);
 });
 schedule.scheduleJob('00 00 00 * * 0-6', ()=>{
     bot.stop();
