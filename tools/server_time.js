@@ -15,8 +15,7 @@ class ServerTime extends Date{
     }
     static isWeekday(day){
         if (typeof day != 'string') return new TypeError('Argument isValidWeekDay is string.');
-        console.log(pairs_days.indexOf(day));
-        return pairs_days.indexOf(day);
+        return pairs_days.indexOf(day)!==-1;
     }
     static Weekdays(){
         return pairs_days.slice();
