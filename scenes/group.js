@@ -44,7 +44,7 @@ const group = function (reverse_markup) {
                 sql_db.callback(sql, values, function (err) {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.');
-                        return console.log(err);
+                        return console.error(err);
                     }
                     ctx.reply('Вы успешно настроили вашу группу.', null, reverse_markup);
                 });
@@ -53,7 +53,7 @@ const group = function (reverse_markup) {
                 sql_db.callback(sql, [], function (err) {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
-                        return console.log(err);
+                        return console.error(err);
                     } else ctx.reply('Вы успешно настроили группу.', null, reverse_markup);
                 });
             }

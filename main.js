@@ -8,12 +8,14 @@ const Session = require('node-vk-bot-api/lib/session');
 const Stage = require('node-vk-bot-api/lib/stage');
 const Markup = require('node-vk-bot-api/lib/markup');
 const schedule = require('node-schedule');
+const TritData = require('./tools/trit_data');
 
 const ServerTime = require('./tools/server_time');
 const Message = require('./tools/message_parser');
 const levenshtein = require('./tools/levenshtein');
 // tools
 const server_time = new ServerTime();
+const trit_data = new TritData();
 // resource
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание на сегодня', 'positive'),
@@ -31,20 +33,42 @@ schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
 schedule.scheduleJob('00 00 00 * * 0-6', ()=>{
     bot.stop();
     console.log('Timeout to restart bot is set.');
-    setTimeout(function () {
+    setTimeout(()=>{
         bot.start();
         bot.startPolling(() => {
             console.log('Bot restarted.')
         });
     }, 30000);
 });
+schedule.scheduleJob('0 0 * ? * *', async ()=>{
+    await trit_data.CheckChange();
+});
 // scenes
 bot.use(new Session().middleware());
 bot.use(new Stage(...ctx_scenes(reverse_menu)).middleware());
-// use's and commands
+// event for processing an invitation to a conversation
+bot.event('message_new', (ctx,next) => {
+    try {
+        if (ctx.message.action.type === 'chat_invite_user'){
+            bot.execute('messages.send', {
+                peer_id: ctx.message.peer_id, // <- inside account id-dialog, DONT unique
+                random_id: Math.floor(Math.random() * Math.floor(10000000000)),
+                message: "Все изменения в расписании будут скидываться сюда."
+            });
+
+            // get all info for group
+            // ONLY admins permission in conversation
+            // let ss = await bot.execute('messages.getConversationsById', {
+            //     peer_ids:2000000001 // <- inside dialog bot id, DONT private
+            // });
+        }
+    } catch (ignore) {
+        next();
+    }
+});
+// serialization messages
 bot.use((ctx,next)=>{
     ctx.message.payload = typeof ctx.message.payload !== 'undefined' ? JSON.parse(ctx.message.payload) : [];
-
     const message = ctx.message.text.split(' ');
     for (let i of leven_list){
         if (levenshtein(i, message[0]) <= 2){
@@ -56,6 +80,7 @@ bot.use((ctx,next)=>{
     }
     next();
 });
+
 bot.command('поиск пары', (ctx)=>{
     ctx.reply("Напиши мне \"найди {пара}\"");
     ctx.reply('')
@@ -72,7 +97,6 @@ bot.command('кабинет', async (ctx)=>{
     ctx_methods(reverse_menu).find_cabinet(ctx,obj);
 });
 bot.command('настройки', (ctx) => {
-    // todo изучи step
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
@@ -80,7 +104,42 @@ bot.command('расписание', async (ctx)=>{
     ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
 });
 bot.on((ctx) => {
-    ctx.scene.enter('unknown_command',0)
+    if (ctx.message.peer_id < 2000000000){
+        ctx.scene.enter('unknown_command',0)
+    }
+});
+trit_data.on("changes",(data_changes)=>{
+    let days_week = {};
+    let full_str = `Изменения в расписании:\n`;
+    for (let _group in data_changes){
+        for (let _day in data_changes[_group]){
+            if (typeof days_week[_day] === "undefined") {
+                days_week[_day]=[];
+            }
+            days_week[_day].push({
+                "group":_group,
+                "changes":data_changes[_group][_day]
+            })
+        }
+    }
+
+    for (let _day in days_week){
+        full_str += `На ${_day}:\n`;
+        days_week[_day].forEach(object=>{
+            for (let i in object.changes){
+                full_str+=`Группа №${object.group} ${i}.${object.changes[i].stock.name ? object.changes[i].stock.name : "—"}[${object.changes[i].stock.room ? object.changes[i].stock.room : "—"}] —> ${i}.${object.changes[i].modified.name ? object.changes[i].modified.name : "—"}[${object.changes[i].modified.room ? object.changes[i].modified.room : "—"}]\n`
+            }
+        });
+    }
+    // todo save Conversations-id into db
+    for (let i = 1; i < 10;i++){
+        bot.execute('messages.send', {
+            peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
+            random_id: Math.floor(Math.random() * Math.floor(10000000000)),
+            message: full_str,
+        });
+    }
+    trit_data.updFSData('data.json', TritData.getDataPromise());
 });
 bot.startPolling(() => {
     console.log('Bot started.')

@@ -26,7 +26,7 @@ const notify_c = function (reverse_markup) {
             sql_db.callback(sql, [], function (err) {
                 if (err) {
                     ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
-                    return console.log(err);
+                    return console.error(err);
                 } else ctx.reply('Вы успешно настроили уведомления.', null, reverse_markup);
             });
             ctx.scene.leave();

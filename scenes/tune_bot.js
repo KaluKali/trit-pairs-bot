@@ -84,7 +84,7 @@ const tune_bot = function (reverse_markup) {
                 sql_db.callback(sql, values, function (err) {
                     if (err) {
                         ctx.reply(str_reply, null, reverse_markup);
-                        return console.log(err);
+                        return console.error(err);
                     } else ctx.reply(str_reply, null, reverse_markup);
                 });
             } else {
@@ -92,7 +92,7 @@ const tune_bot = function (reverse_markup) {
                 sql_db.callback(sql, [], function (err) {
                     if (err) {
                         ctx.reply(str_reply, null, reverse_markup);
-                        return console.log(err);
+                        return console.error(err);
                     } else ctx.reply(str_reply, null, reverse_markup);
                 });
             }
