@@ -40,7 +40,9 @@ schedule.scheduleJob('00 00 00 * * 0-6', ()=>{
         });
     }, 30000);
 });
-schedule.scheduleJob('0 0 * ? * *', async ()=>{
+// Every hour 0 0 * ? * *
+// Every second * * * ? * *
+schedule.scheduleJob('* * * ? * *', async ()=>{
     await trit_data.CheckChange();
 });
 // scenes
@@ -111,21 +113,22 @@ bot.on((ctx) => {
 trit_data.on("changes",(data_changes)=>{
     let days_week = {};
     let full_str = `Изменения в расписании:\n`;
-    for (let _group in data_changes){
-        for (let _day in data_changes[_group]){
-            if (typeof days_week[_day] === "undefined") {
-                days_week[_day]=[];
+    console.log(data_changes);
+    for (let one_group in data_changes){
+        for (let one_day in data_changes[one_group]){
+            if (typeof days_week[one_day] === "undefined") {
+                days_week[one_day]=[];
             }
-            days_week[_day].push({
-                "group":_group,
-                "changes":data_changes[_group][_day]
+            days_week[one_day].push({
+                "group":one_group,
+                "changes":data_changes[one_group][one_day]
             })
         }
     }
 
-    for (let _day in days_week){
-        full_str += `На ${_day}:\n`;
-        days_week[_day].forEach(object=>{
+    for (let one_day in days_week){
+        full_str += `На ${one_day}:\n`;
+        days_week[one_day].forEach(object=>{
             for (let i in object.changes){
                 full_str+=`Группа №${object.group} ${i}.${object.changes[i].stock.name ? object.changes[i].stock.name : "—"}[${object.changes[i].stock.room ? object.changes[i].stock.room : "—"}] —> ${i}.${object.changes[i].modified.name ? object.changes[i].modified.name : "—"}[${object.changes[i].modified.room ? object.changes[i].modified.room : "—"}]\n`
             }
