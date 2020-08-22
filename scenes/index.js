@@ -1,4 +1,4 @@
-const scenes = function (reverse_markup) {
+const scenes = (reverse_markup) => {
     if (typeof reverse_markup === 'undefined') reverse_markup = Markup.keyboard([
         Markup.button('Расписание', 'positive'),
         Markup.button('Расписание на завтра', 'positive'),

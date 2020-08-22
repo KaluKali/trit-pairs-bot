@@ -45,7 +45,6 @@ MessageParser.prototype.parse_pairs_day = async function () {
     // 2
     // 3 день недели
     let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
-
     this.args.forEach((param) => {
         if (param === 'на') return;
         else if (param.indexOf('завтр')!==-1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);

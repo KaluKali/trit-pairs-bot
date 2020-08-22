@@ -5,6 +5,7 @@ group.json
 pm2-start.cmd
 pm2-stop.cmd
 main-pm2.json
+package-lock.json
 
 # Logs
 logs

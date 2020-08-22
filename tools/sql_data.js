@@ -8,7 +8,7 @@ const SqlDB = function () {
         password: process.env.DB_PASS,
     });
     this.connection.connect(function(err){
-        if (err) return Error("MAIN Ошибка подключения к MySQL: " + err.message)
+        if (err) return Error("MAIN Ошибка подключения к MySQL: " + err.message);
     });
 };
 

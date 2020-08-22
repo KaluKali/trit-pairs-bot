@@ -26,10 +26,9 @@ class TritData extends EventEmitter{
     getData(callback){
         this.getFSData('data.json',(data,err)=>{
             if (!err){
-                const exist_data = JSON.parse(data);
-                const back_date = new Date(exist_data.date);
+                const back_date = new Date(data.date);
                 if (back_date.getDate() === now_date.getDate()){
-                    callback(exist_data.data);
+                    callback(data.data);
                 } else {
                     this.updFSData('data.json',TritData.getDataPromise(),callback)
                 }
@@ -41,10 +40,9 @@ class TritData extends EventEmitter{
     getValidGroups(callback){
         this.getFSData('group.json',(data,err)=>{
             if (!err){
-                const data_s = JSON.parse(data);
-                const back_date = new Date(data_s.date);
+                const back_date = new Date(data.date);
                 if (back_date.getDate() === now_date.getDate()){
-                    callback(data_s.data);
+                    callback(data.data);
                 } else {
                     this.updFSData('group.json',TritData.getGroupsPromise(),callback);
                 }
@@ -53,18 +51,17 @@ class TritData extends EventEmitter{
             }
         });
     }
-    async CheckChange(){
+    CheckChange(){
         TritData.getDataPromise().then(data_inet=>{
             let pairs_change;
             this.getFSData('data.json',(data_fs,err)=>{
                 if (!err){
-                    data_fs = JSON.parse(data_fs).data;
                     TritData.getGroupsPromise().then(response=>{
                         for (let one_group of response){
                             for (let one_weekday of Object.keys(data_inet[one_group]['weekdays'])){
                                 data_inet[one_group]['weekdays'][one_weekday].pairs.forEach((pair_inet, i_inet)=>{
                                     let success=false;
-                                    data_fs[one_group]['weekdays'][one_weekday].pairs.forEach((pair_fs, i_fs)=>{
+                                    data_fs.data[one_group]['weekdays'][one_weekday].pairs.forEach((pair_fs, i_fs)=>{
                                         if (pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && i_inet === i_fs) success=true;
                                     });
                                     if (!success){
@@ -78,7 +75,7 @@ class TritData extends EventEmitter{
                                             pairs_change[one_group][one_weekday]={}
                                         }
                                         pairs_change[one_group][one_weekday][i_inet+1]={
-                                            'modified': data_fs[one_group]['weekdays'][one_weekday].pairs[i_inet],
+                                            'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[i_inet],
                                             'stock': pair_inet
                                         };
                                     }
@@ -88,7 +85,7 @@ class TritData extends EventEmitter{
                         if (typeof pairs_change !== "undefined"){
                             this.emit("changes",pairs_change)
                         }
-                    })
+                    }).catch(err => this.emit(undefined,err))
                 } else {
                     this.updFSData('data.json',TritData.getDataPromise())
                 }
@@ -103,7 +100,7 @@ class TritData extends EventEmitter{
             if (!err){
                 fs.readFile(name, 'utf-8', (err,data)=>{
                     if (!err){
-                        callback(data);
+                        callback(JSON.parse(data));
                     } else {
                         console.error(err);
                         callback(undefined,err)
@@ -122,11 +119,20 @@ class TritData extends EventEmitter{
             } catch (e) {
                 console.warn(e);
             } finally {
-                console.warn(`${name} updated`);
+                console.info(`${name} updated.`);
                 if (callback){
                     callback(response);
                 }
             }
+        }).catch(err => {
+            this.getFSData(name,(fs_data, err_fs)=>{
+                if (!err_fs){
+                    callback(fs_data.data,err);
+                } else {
+                    callback(undefined, err_fs);
+                    console.error(err_fs);
+                }
+            })
         });
     }
 }

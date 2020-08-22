@@ -3,6 +3,7 @@ const table = require('text-table');
 const TritData = require('../tools/trit_data');
 const SqlDB = require('../tools/sql_data');
 const getUserInfo = require('../tools/user_info');
+const pairTools = require('../tools/pair_tools').default;
 
 const trit_data = new TritData();
 const sql_db = new SqlDB();
@@ -12,7 +13,7 @@ const mailing = (reverse_markup,table_style) => {
     return async (weekday, bot)=>{
         const sql = `SELECT vk_id FROM ${process.env.DB_TABLE}`;
         sql_db.callback(sql, (err, results) => { // получаем список всех юзеров из вк
-            if(err) console.error(`mailing Error: ${err}`);
+            if(err) return  console.error(`mailing Error: ${err}`);
             const users = [];
             for(let i of results) users.push(i.vk_id); // формируем список юзеров
             trit_data.getData(async (data) => {
@@ -27,20 +28,7 @@ const mailing = (reverse_markup,table_style) => {
                 // сортируем только по уникальным значениям, получая те группы которым нужно сформировать таблицу расписания
                 uniq_exec_groups.forEach((group) => {
                     // формируем таблицу
-                    const data_day_s = [];
-                    let i_pair = 1;
-                    data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
-                        if (i < 4){ // Pair limit
-                            if (pair.room === false) pair.room = '—';
-                            if (pair.name === false) pair.name = '—';
-                            data_day_s.push(
-                                [i_pair, trit_data.PairsTime()[i_pair-1], pair.room, pair.name],
-                                [i_pair+1, trit_data.PairsTime()[i_pair], pair.room, pair.name]
-                            );
-                            i_pair+=2;
-                        }
-                    });
-                    const t = table(data_day_s, table_style);
+                    const t = table(pairTools.jsonToPairs(data, group, weekday), table_style);
                     // формируем таблицу end
                     const send_users = g_users.filter(user => user.user_group === group && user.notify === 1 && user.notify_e_d === 1);
                     // сортируем по группе, параметрам уведомлений которые выставлены у юзеров

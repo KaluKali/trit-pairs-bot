@@ -4,21 +4,23 @@ const hello_carousel = require('../carousels/carousel');
 
 const settings = function (reverse_markup) {
     const buttons = {
-        yes:{text: 'Да', color:'positive', action: function (ctx) {
-                if (typeof ctx.client_info.carousel === 'undefined'){
-                    ctx.reply('Выберите один из вариантов:',null,reverse_markup);
-                    return ctx.scene.leave();
-                } else {
-                    ctx.bot.execute('messages.send', {
-                        user_id: ctx.message.from_id,
-                        message: 'Возможности бота:',
-                        random_id: Math.floor(Math.random() * 1000),
-                        template: JSON.stringify(hello_carousel)
-                    }).catch((err) => {
-                        console.log('In scene "unknown_command error: "', err);
-                    });
-                    return ctx.scene.leave();
-                }
+        yes:{text: 'Да', color:'positive', action: (ctx) => {
+                ctx.reply('Выберите один из вариантов:',null,reverse_markup);
+                return ctx.scene.leave();
+                // if (typeof ctx.client_info.carousel === 'undefined'){
+                //     ctx.reply('Выберите один из вариантов:',null,reverse_markup);
+                //     return ctx.scene.leave();
+                // } else {
+                //     ctx.bot.execute('messages.send', {
+                //         user_id: ctx.message.from_id,
+                //         message: 'Возможности бота:',
+                //         random_id: Math.floor(Math.random() * 1000),
+                //         template: JSON.stringify(hello_carousel)
+                //     }).catch((err) => {
+                //         console.log('In scene "unknown_command error: "', err);
+                //     });
+                //     return ctx.scene.leave();
+                // }
             }},
         no:{text: 'Нет', color:'negative', action: function (ctx) {
                 ctx.reply('Выберите один из вариантов:',null,reverse_markup);

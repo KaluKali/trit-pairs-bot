@@ -30,7 +30,7 @@ const leven_list = ['расписание','найди','помощь','наст
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
     return ctx_methods(reverse_menu).mailing(server_time.getWeekday(),bot);
 });
-schedule.scheduleJob('00 00 00 * * 0-6', ()=>{
+schedule.scheduleJob('0 0 */6 ? * *', ()=>{
     bot.stop();
     console.log('Timeout to restart bot is set.');
     setTimeout(()=>{
@@ -42,9 +42,7 @@ schedule.scheduleJob('00 00 00 * * 0-6', ()=>{
 });
 // Every hour 0 0 * ? * *
 // Every second * * * ? * *
-schedule.scheduleJob('* * * ? * *', async ()=>{
-    await trit_data.CheckChange();
-});
+schedule.scheduleJob('0 0 * ? * *', ()=>trit_data.CheckChange());
 // scenes
 bot.use(new Session().middleware());
 bot.use(new Stage(...ctx_scenes(reverse_menu)).middleware());
@@ -55,7 +53,7 @@ bot.event('message_new', (ctx,next) => {
             bot.execute('messages.send', {
                 peer_id: ctx.message.peer_id, // <- inside account id-dialog, DONT unique
                 random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                message: "Все изменения в расписании будут скидываться сюда."
+                message: 'Все изменения в расписании будут скидываться сюда.'
             });
 
             // get all info for group
@@ -84,7 +82,7 @@ bot.use((ctx,next)=>{
 });
 
 bot.command('поиск пары', (ctx)=>{
-    ctx.reply("Напиши мне \"найди {пара}\"");
+    ctx.reply('Напиши мне \"найди {пара}\"');
     ctx.reply('')
 });
 bot.command('неделя', (ctx)=>{
@@ -110,18 +108,17 @@ bot.on((ctx) => {
         ctx.scene.enter('unknown_command',0)
     }
 });
-trit_data.on("changes",(data_changes)=>{
+trit_data.on('changes',(data_changes)=>{
     let days_week = {};
     let full_str = `Изменения в расписании:\n`;
-    console.log(data_changes);
     for (let one_group in data_changes){
         for (let one_day in data_changes[one_group]){
-            if (typeof days_week[one_day] === "undefined") {
+            if (typeof days_week[one_day] === 'undefined') {
                 days_week[one_day]=[];
             }
             days_week[one_day].push({
-                "group":one_group,
-                "changes":data_changes[one_group][one_day]
+                'group':one_group,
+                'changes':data_changes[one_group][one_day]
             })
         }
     }
@@ -130,7 +127,7 @@ trit_data.on("changes",(data_changes)=>{
         full_str += `На ${one_day}:\n`;
         days_week[one_day].forEach(object=>{
             for (let i in object.changes){
-                full_str+=`Группа №${object.group} ${i}.${object.changes[i].stock.name ? object.changes[i].stock.name : "—"}[${object.changes[i].stock.room ? object.changes[i].stock.room : "—"}] —> ${i}.${object.changes[i].modified.name ? object.changes[i].modified.name : "—"}[${object.changes[i].modified.room ? object.changes[i].modified.room : "—"}]\n`
+                full_str+=` Группа №${object.group} ${i}.${object.changes[i].stock.name ? object.changes[i].stock.name : '—'}[${object.changes[i].stock.room ? object.changes[i].stock.room : '—'}] —> ${i}.${object.changes[i].modified.name ? object.changes[i].modified.name : '—'}[${object.changes[i].modified.room ? object.changes[i].modified.room : '—'}]\n`
             }
         });
     }
