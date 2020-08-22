@@ -17,7 +17,7 @@ const settings = function (reverse_markup) {
                 //         random_id: Math.floor(Math.random() * 1000),
                 //         template: JSON.stringify(hello_carousel)
                 //     }).catch((err) => {
-                //         console.log('In scene "unknown_command error: "', err);
+                //         console.log('In scene "unknown_command error: ', err);
                 //     });
                 //     return ctx.scene.leave();
                 // }

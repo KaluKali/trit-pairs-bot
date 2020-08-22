@@ -1,1 +1,0 @@
-pm2 start main-pm2.json
