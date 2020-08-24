@@ -35,13 +35,12 @@ const pairs_now_day_new = (reverse_markup, table_style) => {
                     .fill('#000000')
                     .fontSize('46')
                     .out('-background', '#FFFFFF')
-                    .out('-size', '800x', `caption:Расписание группы ${group} на \n${weekday}.\n\n${content}`, 'center')
+                    .out('-size', '800x', `caption:Расписание группы ${group} на \n${weekday}\n\n${content}`, 'center')
                     .out('-gravity', 'center')
                     .out('-composite')
                     .out('-trim')
                     .toBuffer('JPEG', async (err,buffer)=>{
                         const upload_data = await bot.execute('photos.getMessagesUploadServer');
-
                         const formData = {
                             photo: {
                                 value: buffer,
