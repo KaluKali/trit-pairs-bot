@@ -13,8 +13,8 @@ PairTools.prototype.jsonToPairs = (data, group, weekday) =>{
             if (pair.room === false) pair.room = '—';
             if (pair.name === false) pair.name = '—';
             data_day_s.push(
-                [i_pair, trit_data.PairsTime()[i_pair-1], pair.room, pair.name],
-                [i_pair+1, trit_data.PairsTime()[i_pair], pair.room, pair.name]
+                [trit_data.PairsTime()[i_pair-1], pair.room.trim(), pair.name.trim().toLowerCase()],
+                [trit_data.PairsTime()[i_pair], pair.room.trim(), pair.name.trim().toLowerCase()]
             );
             i_pair+=2;
         }

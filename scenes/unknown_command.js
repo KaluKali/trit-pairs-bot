@@ -1,6 +1,6 @@
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
-const hello_carousel = require('../carousels/carousel');
+// const hello_carousel = require('../carousels/carousel');
 
 const settings = function (reverse_markup) {
     const buttons = {
@@ -31,7 +31,6 @@ const settings = function (reverse_markup) {
     return new Scene('unknown_command',
         (ctx) => {
             ctx.scene.next();
-
             const keyboard_list = [];
             for (let k of Object.keys(buttons)){
                 keyboard_list.push(Markup.button(buttons[k].text, buttons[k].color))

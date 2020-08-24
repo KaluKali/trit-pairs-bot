@@ -53,9 +53,8 @@ bot.event('message_new', (ctx,next) => {
             bot.execute('messages.send', {
                 peer_id: ctx.message.peer_id, // <- inside account id-dialog, DONT unique
                 random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                message: 'Все изменения в расписании будут скидываться сюда.'
+                message: 'Беседа добавлена в список уведомления о изменениях в расписании.'
             });
-
             // get all info for group
             // ONLY admins permission in conversation
             // let ss = await bot.execute('messages.getConversationsById', {
@@ -101,7 +100,7 @@ bot.command('настройки', (ctx) => {
 });
 bot.command('расписание', async (ctx)=>{
     const parsed_message = await new Message(ctx.message.text).parse_pairs_day();
-    ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
+    ctx_methods(reverse_menu).pairs_day_new(ctx,parsed_message, bot);
 });
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
