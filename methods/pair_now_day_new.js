@@ -3,16 +3,9 @@ const TritData = require('../tools/trit_data');
 const getUserInfo = require('../tools/user_info');
 const pairTools = require('../tools/pair_tools').default;
 // experiment tools
-const multer = require('multer');
-const upload = multer();
 const table = require('text-table');
 const gm = require('gm').subClass({imageMagick: true, appPath:'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\'});
 const request = require('request');
-const fs = require('fs');
-const Readable = require('stream').Readable;
-// const restler = require('restler');
-const axios = require("axios");
-const FormData = require("form-data");
 //
 const server_time = new ServerTime();
 const trit_data = new TritData();
@@ -37,43 +30,49 @@ const pairs_now_day_new = (reverse_markup, table_style) => {
         trit_data.getData( (data, err) => {
             if (!err){
                 let content = table(pairTools.jsonToPairs(data, group, weekday), table_style).toString();
+
                 gm(800, 600, '#FFFFFF')
                     .fill('#000000')
                     .fontSize('46')
                     .out('-background', '#FFFFFF')
-                    .out('-size', '800x', `caption:\ Расписание группы ${group} на \n${weekday}.\n\n${content}`, 'center')
+                    .out('-size', '800x', `caption:Расписание группы ${group} на \n${weekday}.\n\n${content}`, 'center')
                     .out('-gravity', 'center')
                     .out('-composite')
                     .out('-trim')
-                    .write('./tmp.jpg', async ()=>{
-                // gm(1000, 1000, '#ffffff').fontSize(24).font('Bahnschrift Correct').fill('#000000').out('-box','#ffffff').drawText(10, 200,
-                //     `Расписание группы ${group} на ${weekday}.\n\n`+content.replace(' ','\ '), 'center').trim()
-                // // .stream((err,stdout,stderr)=>{
-                // // .toBuffer('jpeg', async (err,buff)=>{
-                //     .write('./tmp.jpg', async (err) =>{
-                        // const newStream = new Readable({
-                        //     read() {
-                        //         this.push(buff.toString());
-                        //     },
-                        // });
+                    .toBuffer('JPEG', async (err,buffer)=>{
                         const upload_data = await bot.execute('photos.getMessagesUploadServer');
-                        const formData = new FormData();
-                        formData.append("photo", fs.createReadStream('./tmp.jpg'));
-                        const { data } = await axios({
-                            url: upload_data.upload_url,
-                            method: "POST",
-                            data: formData,
-                            headers: {
-                                'content-type': `multipart/form-data; boundary=${formData._boundary}`,
-                            },
-                        });
-                        const photo_data = await bot.execute('photos.saveMessagesPhoto', data);
 
-                        ctx.reply('',`photo${photo_data[0].owner_id}_${photo_data[0].id}`, reverse_markup)
+                        const formData = {
+                            photo: {
+                                value: buffer,
+                                options: {
+                                    filename: 'img_custom.jpg',
+                                    contentType: 'multipart/form-data'
+                                }
+                            }
+                        };
+                        let boundary = '--------------------------';
+                        for (let i = 0; i < 24; i++) {
+                            boundary += Math.floor(Math.random() * 10).toString(16);
+                        }
+                        const options = {
+                            headers: {
+                                'content-type': `multipart/form-data; boundary=${boundary}`,
+                            },
+                            uri: upload_data.upload_url,
+                            formData: formData,
+                            method: 'POST'
+                        };
+
+                        request(options, async (err, response, body) => {
+                            if (err) console.log('Request err: ', err);
+                            const photo_data = await bot.execute('photos.saveMessagesPhoto', JSON.parse(body));
+                            ctx.reply('',`photo${photo_data[0].owner_id}_${photo_data[0].id}`, reverse_markup)
+                        });
                     });
             } else {
                 if (data){
-                    ctx.reply(`!!! Сайт имеет технические неполадки !!!
+                    ctx.reply(`!!! Сайт техникума имеет технические неполадки !!!
                     Список уроков для ${group} группы на ${weekday}.\n
                     ${table(pairTools.jsonToPairs(data, group, weekday), table_style).toString()}`,null,reverse_markup);
                 } else {
