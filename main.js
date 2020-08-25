@@ -16,6 +16,8 @@ const levenshtein = require('./tools/levenshtein');
 // tools
 const server_time = new ServerTime();
 const trit_data = new TritData();
+const saveImageVK = require('./tools/saveImageVK');
+const gm = require('gm').subClass({imageMagick: true, appPath:'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\'});
 // resource
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание на сегодня', 'positive'),
@@ -42,7 +44,11 @@ schedule.scheduleJob('0 0 */6 ? * *', ()=>{
 });
 // Every hour 0 0 * ? * *
 // Every second * * * ? * *
-schedule.scheduleJob('0 0 * ? * *', ()=>trit_data.CheckChange());
+// default 0 * * * *
+schedule.scheduleJob('0 * * * *', ()=>{
+    console.log('Checked pairs change.');
+    trit_data.CheckChange()
+});
 // scenes
 bot.use(new Session().middleware());
 bot.use(new Stage(...ctx_scenes(reverse_menu)).middleware());
@@ -108,37 +114,70 @@ bot.on((ctx) => {
     }
 });
 trit_data.on('changes',(data_changes)=>{
-    let days_week = {};
-    let full_str = `Изменения в расписании:\n`;
+    let pairDayWeek = {};
     for (let one_group in data_changes){
         for (let one_day in data_changes[one_group]){
-            if (typeof days_week[one_day] === 'undefined') {
-                days_week[one_day]=[];
-            }
-            days_week[one_day].push({
+            if (typeof pairDayWeek[one_day] === 'undefined') pairDayWeek[one_day]=[];
+            pairDayWeek[one_day].push({
                 'group':one_group,
                 'changes':data_changes[one_group][one_day]
             })
         }
     }
-
-    for (let one_day in days_week){
-        full_str += `На ${one_day}:\n`;
-        days_week[one_day].forEach(object=>{
-            for (let i in object.changes){
-                full_str+=` Группа №${object.group} ${i}.${object.changes[i].stock.name ? object.changes[i].stock.name : '—'}[${object.changes[i].stock.room ? object.changes[i].stock.room : '—'}] —> ${i}.${object.changes[i].modified.name ? object.changes[i].modified.name : '—'}[${object.changes[i].modified.room ? object.changes[i].modified.room : '—'}]\n`
+    let changeGraphic = gm().out('-kerning','1').out('-gravity','east');
+    let prev_indent = 0;
+    let cols = 0;
+    let markups =[];
+    for (let one_day in pairDayWeek){
+        let pangoMarkup = `\n\n<markup>`;
+        cols +=1;
+        pangoMarkup += `${one_day[0].toUpperCase() + one_day.slice(1)}<span>\n\n`;
+        pairDayWeek[one_day].forEach(dayChanges=>{
+            pangoMarkup += `Группа ${dayChanges.group}\n\n`;
+            for (let pairIndex in dayChanges.changes){
+                let stock = `${dayChanges.changes[pairIndex].stock.name ? dayChanges.changes[pairIndex].stock.name : '—'} ${dayChanges.changes[pairIndex].stock.room ? `  каб. ${dayChanges.changes[pairIndex].stock.room}` : '  каб. —'}`;
+                let modify = `${dayChanges.changes[pairIndex].modified.name ? dayChanges.changes[pairIndex].modified.name : '—'} ${dayChanges.changes[pairIndex].modified.room ? `  каб. ${dayChanges.changes[pairIndex].modified.room}` : '  каб. —'}`;
+                pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>   \n`
             }
         });
+        for (let now_indent = pangoMarkup.split('\n').length-1; now_indent < prev_indent; now_indent++) pangoMarkup+='\n';
+
+        pangoMarkup += `</span></markup>`;
+        prev_indent = pangoMarkup.split('\n').length-1;
+        if (!(cols % 2)){
+            markups.push(pangoMarkup);
+            changeGraphic = changeGraphic.out(`pango:${markups.join('')}`).out('+append');
+            markups = []
+        } else {
+            markups.push(pangoMarkup)
+        }
     }
-    // todo save Conversations-id into db
-    for (let i = 1; i < 10;i++){
-        bot.execute('messages.send', {
-            peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
-            random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-            message: full_str,
+    if (markups.length) changeGraphic = changeGraphic.out(`pango:${markups.join('')}`);
+    changeGraphic
+        // .trim()
+        // .borderColor('#FFFFFF')
+        // .border(20,20)
+        .out('-gravity','west')
+        .out('-append')
+        .toBuffer('JPEG',(err,buffer)=>{
+            if (err){
+                console.log(err);
+                return;
+            }
+            saveImageVK(buffer,bot,async (photo_data)=>{
+                for (let i = 1; i < 3;i++){
+                    await bot.execute('messages.send', {
+                        peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
+                        random_id: Math.floor(Math.random() * Math.floor(10000000000)),
+                        attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
+                    }).catch(error => console.log(error));
+                }
+                trit_data.updFSData('data.json', TritData.getDataPromise());
+                // process.exit(1);
+            });
         });
-    }
-    trit_data.updFSData('data.json', TritData.getDataPromise());
+
+    // todo save Conversations-id into db
 });
 bot.startPolling(() => {
     console.log('Bot started.')

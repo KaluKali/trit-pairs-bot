@@ -60,20 +60,13 @@ class TritData extends EventEmitter{
                         for (let one_group of response){
                             for (let one_weekday of Object.keys(data_inet[one_group]['weekdays'])){
                                 data_inet[one_group]['weekdays'][one_weekday].pairs.forEach((pair_inet, i_inet)=>{
-                                    let success=false;
-                                    data_fs.data[one_group]['weekdays'][one_weekday].pairs.forEach((pair_fs, i_fs)=>{
-                                        if (pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && i_inet === i_fs) success=true;
-                                    });
-                                    if (!success){
-                                        if (typeof pairs_change === "undefined"){
-                                            pairs_change = {}
-                                        }
-                                        if (typeof pairs_change[one_group] === "undefined") {
-                                            pairs_change[one_group]={}
-                                        }
-                                        if (typeof pairs_change[one_group][one_weekday] === "undefined") {
-                                            pairs_change[one_group][one_weekday]={}
-                                        }
+                                    let changes = data_fs.data[one_group]['weekdays'][one_weekday].pairs
+                                        .some((pair_fs, i_fs)=>
+                                            (pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && i_inet === i_fs) === true);
+                                    if (!changes){
+                                        if (typeof pairs_change === "undefined") pairs_change = {};
+                                        if (typeof pairs_change[one_group] === "undefined") pairs_change[one_group] = {};
+                                        if (typeof pairs_change[one_group][one_weekday] === "undefined") pairs_change[one_group][one_weekday] = {};
                                         pairs_change[one_group][one_weekday][i_inet+1]={
                                             'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[i_inet],
                                             'stock': pair_inet

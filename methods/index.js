@@ -15,6 +15,7 @@ const methods = function (reverse_markup,table_style) {
         find_pairs:require('./find_pairs')(reverse_markup,table_style),
         mailing:require('./mailing')(reverse_markup,table_style),
         find_cabinet:require('./find_cabinet')(reverse_markup,table_style),
+        send_image:require('./send_image')(reverse_markup)
     }
 };
 
