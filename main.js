@@ -45,7 +45,7 @@ schedule.scheduleJob('0 0 */6 ? * *', ()=>{
 // Every hour 0 0 * ? * *
 // Every second * * * ? * *
 // default 0 * * * *
-schedule.scheduleJob('0 * * * *', ()=>{
+schedule.scheduleJob('* * * ? * *', ()=>{
     console.log('Checked pairs change.');
     trit_data.CheckChange()
 });
@@ -113,52 +113,103 @@ bot.on((ctx) => {
         ctx.scene.enter('unknown_command',0)
     }
 });
-trit_data.on('changes',(data_changes)=>{
-    let pairDayWeek = {};
+trit_data.on('changes',async (data_changes)=>{
+    let pairDayWeek = {
+        'понедельник':[],
+        'вторник':[],
+        'среда':[],
+        'четверг':[],
+        'пятница':[],
+        'суббота':[],
+    };
     for (let one_group in data_changes){
         for (let one_day in data_changes[one_group]){
-            if (typeof pairDayWeek[one_day] === 'undefined') pairDayWeek[one_day]=[];
             pairDayWeek[one_day].push({
                 'group':one_group,
                 'changes':data_changes[one_group][one_day]
             })
         }
     }
-    let changeGraphic = gm().out('-kerning','1').out('-gravity','east');
-    let prev_indent = 0;
-    let cols = 0;
-    let markups =[];
+
+    // let prev_indent = 0;
+    // let two_prev_indent = 0;
+    // let ponedel;
+    // let vtorn;
+    let week_markups = [];
+    const title_indent = 3;
     for (let one_day in pairDayWeek){
-        let pangoMarkup = `\n\n<markup>`;
-        cols +=1;
-        pangoMarkup += `${one_day[0].toUpperCase() + one_day.slice(1)}<span>\n\n`;
+        // title indent
+        let pangoMarkup = `\n<span><b>${one_day[0].toUpperCase() + one_day.slice(1)}</b>\n\n`;
         pairDayWeek[one_day].forEach(dayChanges=>{
-            pangoMarkup += `Группа ${dayChanges.group}\n\n`;
+            pangoMarkup += `\nГруппа ${dayChanges.group}\n\n`;
             for (let pairIndex in dayChanges.changes){
                 let stock = `${dayChanges.changes[pairIndex].stock.name ? dayChanges.changes[pairIndex].stock.name : '—'} ${dayChanges.changes[pairIndex].stock.room ? `  каб. ${dayChanges.changes[pairIndex].stock.room}` : '  каб. —'}`;
                 let modify = `${dayChanges.changes[pairIndex].modified.name ? dayChanges.changes[pairIndex].modified.name : '—'} ${dayChanges.changes[pairIndex].modified.room ? `  каб. ${dayChanges.changes[pairIndex].modified.room}` : '  каб. —'}`;
-                pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>   \n`
+                pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>\n`
             }
         });
-        for (let now_indent = pangoMarkup.split('\n').length-1; now_indent < prev_indent; now_indent++) pangoMarkup+='\n';
 
-        pangoMarkup += `</span></markup>`;
-        prev_indent = pangoMarkup.split('\n').length-1;
-        if (!(cols % 2)){
-            markups.push(pangoMarkup);
-            changeGraphic = changeGraphic.out(`pango:${markups.join('')}`).out('+append');
-            markups = []
-        } else {
-            markups.push(pangoMarkup)
-        }
+        week_markups.push(`${pangoMarkup}`);
+        // if (one_day === 'понедельник') {
+        //     prev_indent = pangoMarkup.split('\n').length-title_indent;
+        //     ponedel = pangoMarkup
+        // } else if (one_day === 'четверг') {
+        //     let next_indent = pangoMarkup.split('\n').length-title_indent;
+        //
+        //     if (next_indent > prev_indent) {
+        //         for (let i = next_indent - prev_indent; i>0; i--) ponedel += '\n'
+        //     } else {
+        //         for (let i = prev_indent - next_indent; i>0; i--) pangoMarkup += '\n'
+        //     }
+        //     week_markups.unshift(`${ponedel}</span>`);
+        //     week_markups.push(`${pangoMarkup}</span>`);
+        // } else if (one_day === 'вторник') {
+        //     // -1 <- init pangomarkup
+        //     two_prev_indent = pangoMarkup.split('\n').length-title_indent;
+        //     vtorn = pangoMarkup
+        // } else if (one_day === 'пятница') {
+        //     let next_indent = pangoMarkup.split('\n').length-title_indent;
+        //     if (next_indent > two_prev_indent) {
+        //         for (let i = next_indent - two_prev_indent; i>0; i--) vtorn += '\n'
+        //     } else {
+        //         for (let i = two_prev_indent - next_indent; i>0; i--) pangoMarkup += '\n'
+        //     }
+        //     week_markups.splice(1,0,`${vtorn}</span>`);
+        //     week_markups.push(`${pangoMarkup}</span>`);
+        // } else week_markups.push(`${pangoMarkup}</span>`);
     }
-    if (markups.length) changeGraphic = changeGraphic.out(`pango:${markups.join('')}`);
+
+    let monday_indent = week_markups[0].split('\n').length-title_indent;
+    let thursday_indent = week_markups[3].split('\n').length-title_indent;
+
+    let tuesday_indent = week_markups[1].split('\n').length-title_indent;
+    let friday_indent = week_markups[4].split('\n').length-title_indent;
+
+    if (monday_indent > thursday_indent) {
+        for (let i = monday_indent - thursday_indent; i>0; i--) week_markups[3] += '\n'
+    } else {
+        for (let i = thursday_indent - monday_indent; i>0; i--) week_markups[0] += '\n'
+    }
+    if (tuesday_indent > friday_indent) {
+        for (let i = tuesday_indent - friday_indent; i>0; i--) week_markups[4] += '\n'
+    } else {
+        for (let i = friday_indent - tuesday_indent; i>0; i--) week_markups[1] += '\n'
+    }
+    for (let i=0;i<6;i++){
+        week_markups[i] += '</span>'
+    }
+
+    let changeGraphic =
+        gm().out('-kerning','1')
+            .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 3)).join('')}</markup>`)
+            .out('-orient','top-right').out('+append')
+            .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 6 && index >= 3)).join('')}</markup>`)
+            .out('-orient','top-right')
+            .out('+append');
+
     changeGraphic
-        // .trim()
-        // .borderColor('#FFFFFF')
-        // .border(20,20)
-        .out('-gravity','west')
-        .out('-append')
+        .borderColor('#FFFFFF')
+        .border(20,20)
         .toBuffer('JPEG',(err,buffer)=>{
             if (err){
                 console.log(err);
@@ -172,8 +223,7 @@ trit_data.on('changes',(data_changes)=>{
                         attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
                     }).catch(error => console.log(error));
                 }
-                trit_data.updFSData('data.json', TritData.getDataPromise());
-                // process.exit(1);
+                // trit_data.updFSData('data.json', TritData.getDataPromise());
             });
         });
 

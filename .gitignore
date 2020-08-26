@@ -6,7 +6,7 @@ pm2-start.cmd
 pm2-stop.cmd
 main-pm2.json
 package-lock.json
-
+data.test
 # Logs
 logs
 *.log
