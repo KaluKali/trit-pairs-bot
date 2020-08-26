@@ -45,7 +45,7 @@ schedule.scheduleJob('0 0 */6 ? * *', ()=>{
 // Every hour 0 0 * ? * *
 // Every second * * * ? * *
 // default 0 * * * *
-schedule.scheduleJob('* * * ? * *', ()=>{
+schedule.scheduleJob('0 * * * *', ()=>{
     console.log('Checked pairs change.');
     trit_data.CheckChange()
 });
@@ -64,7 +64,7 @@ bot.event('message_new', (ctx,next) => {
             // get all info for group
             // ONLY admins permission in conversation
             // let ss = await bot.execute('messages.getConversationsById', {
-            //     peer_ids:2000000001 // <- inside dialog bot id, DONT private
+            //     peer_ids:2000000001 // <- inside dialog bot id, DONT unique
             // });
         }
     } catch (ignore) {
@@ -113,7 +113,7 @@ bot.on((ctx) => {
         ctx.scene.enter('unknown_command',0)
     }
 });
-trit_data.on('changes',async (data_changes)=>{
+trit_data.on('changes', async (data_changes)=>{
     let pairDayWeek = {
         'понедельник':[],
         'вторник':[],
@@ -131,10 +131,6 @@ trit_data.on('changes',async (data_changes)=>{
         }
     }
 
-    // let prev_indent = 0;
-    // let two_prev_indent = 0;
-    // let ponedel;
-    // let vtorn;
     let week_markups = [];
     const title_indent = 3;
     for (let one_day in pairDayWeek){
@@ -148,35 +144,7 @@ trit_data.on('changes',async (data_changes)=>{
                 pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>\n`
             }
         });
-
         week_markups.push(`${pangoMarkup}`);
-        // if (one_day === 'понедельник') {
-        //     prev_indent = pangoMarkup.split('\n').length-title_indent;
-        //     ponedel = pangoMarkup
-        // } else if (one_day === 'четверг') {
-        //     let next_indent = pangoMarkup.split('\n').length-title_indent;
-        //
-        //     if (next_indent > prev_indent) {
-        //         for (let i = next_indent - prev_indent; i>0; i--) ponedel += '\n'
-        //     } else {
-        //         for (let i = prev_indent - next_indent; i>0; i--) pangoMarkup += '\n'
-        //     }
-        //     week_markups.unshift(`${ponedel}</span>`);
-        //     week_markups.push(`${pangoMarkup}</span>`);
-        // } else if (one_day === 'вторник') {
-        //     // -1 <- init pangomarkup
-        //     two_prev_indent = pangoMarkup.split('\n').length-title_indent;
-        //     vtorn = pangoMarkup
-        // } else if (one_day === 'пятница') {
-        //     let next_indent = pangoMarkup.split('\n').length-title_indent;
-        //     if (next_indent > two_prev_indent) {
-        //         for (let i = next_indent - two_prev_indent; i>0; i--) vtorn += '\n'
-        //     } else {
-        //         for (let i = two_prev_indent - next_indent; i>0; i--) pangoMarkup += '\n'
-        //     }
-        //     week_markups.splice(1,0,`${vtorn}</span>`);
-        //     week_markups.push(`${pangoMarkup}</span>`);
-        // } else week_markups.push(`${pangoMarkup}</span>`);
     }
 
     let monday_indent = week_markups[0].split('\n').length-title_indent;
@@ -195,9 +163,7 @@ trit_data.on('changes',async (data_changes)=>{
     } else {
         for (let i = friday_indent - tuesday_indent; i>0; i--) week_markups[1] += '\n'
     }
-    for (let i=0;i<6;i++){
-        week_markups[i] += '</span>'
-    }
+    for (let i=0;i<6;i++) week_markups[i] += '</span>';
 
     let changeGraphic =
         gm().out('-kerning','1')
@@ -223,7 +189,7 @@ trit_data.on('changes',async (data_changes)=>{
                         attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
                     }).catch(error => console.log(error));
                 }
-                // trit_data.updFSData('data.json', TritData.getDataPromise());
+                trit_data.updFSData('data.json', TritData.getDataPromise());
             });
         });
 
