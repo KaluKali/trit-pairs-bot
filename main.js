@@ -144,7 +144,7 @@ trit_data.on('changes', async (data_changes)=>{
                 pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>\n`
             }
         });
-        week_markups.push(`${pangoMarkup}`);
+        week_markups.push(pangoMarkup);
     }
 
     let monday_indent = week_markups[0].split('\n').length-title_indent;
@@ -163,7 +163,7 @@ trit_data.on('changes', async (data_changes)=>{
     } else {
         for (let i = friday_indent - tuesday_indent; i>0; i--) week_markups[1] += '\n'
     }
-    for (let i=0;i<6;i++) week_markups[i] += '</span>';
+    for (let i=0;i<week_markups.length;i++) week_markups[i] += '</span>';
 
     let changeGraphic =
         gm().out('-kerning','1')
