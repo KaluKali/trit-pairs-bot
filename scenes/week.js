@@ -5,25 +5,25 @@ const getUserInfo = require('../tools/user_info');
 const ctx_methods = require('../methods/index');
 
 
-const settings = function (reverse_markup) {
-    const buttons = {};
+const settings = reverse_markup => {
 
-    const weekdays = ServerTime.Weekdays();
+    let weekdays = ServerTime.Weekdays();
     weekdays.shift();
 
-    for (let w of weekdays){
-        buttons[w] = {text:w, color:'primary', action: async function (ctx) {
-                const user_info = await getUserInfo(ctx.message.from_id);
-                if (typeof user_info === 'undefined'){
-                    ctx.scene.leave();
-                    return ctx.scene.enter('group');
-                }
-                const params = {group: user_info.user_group, weekday: w};
+    const buttons = weekdays.map(day=>({
+        text:day,
+        color:'primary',
+        action: async function (ctx) {
+            const user_info = await getUserInfo(ctx.message.from_id,['user_group']);
 
+            if (typeof user_info === 'undefined'){
                 ctx.scene.leave();
-                return ctx_methods(reverse_markup).pairs_day(ctx,params);
-            }}
-    }
+                return ctx.scene.enter('group');
+            }
+            ctx.scene.leave();
+            return ctx_methods(reverse_markup).pairs_day(ctx,{group: user_info.user_group, weekday: day});
+        }
+    }));
 
     return new Scene('week',
         (ctx) => {
@@ -39,15 +39,14 @@ const settings = function (reverse_markup) {
             );
         },
         (ctx) => {
-            let buttons_opt;
-            if (typeof ctx.message.payload !== 'undefined') buttons_opt = JSON.parse(ctx.message.payload);
+            if (typeof ctx.message.payload !== 'undefined') {
+                const buttons_opt = JSON.parse(ctx.message.payload);
+
+                buttons.forEach(button=>{if (button.text === buttons_opt.button) button.action(ctx)});
+            }
             else {
                 ctx.reply('Выберите один из вариантов:',null,reverse_markup);
                 return ctx.scene.leave();
-            }
-
-            for (let k of Object.keys(buttons)){
-                if (buttons[k].text === buttons_opt.button)  buttons[k].action(ctx)
             }
         });
 };

@@ -4,7 +4,7 @@ const texttoimage = (text, func) => {
     gm(1000, 1000, '#FFFFFF')
         .fill('#000000')
         .fontSize('46')
-        .font('./19809.otf')
+        // .font('baskvill.ttf')
         .out('-background', '#FFFFFF')
         .out('-kerning','1')
         .out('-gravity', 'west')
