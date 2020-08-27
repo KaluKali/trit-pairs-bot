@@ -13,15 +13,16 @@ const settings = reverse_markup => {
     const buttons = weekdays.map(day=>({
         text:day,
         color:'primary',
-        action: async function (ctx) {
-            const user_info = await getUserInfo(ctx.message.from_id,['user_group']);
-
-            if (typeof user_info === 'undefined'){
-                ctx.scene.leave();
-                return ctx.scene.enter('group');
-            }
-            ctx.scene.leave();
-            return ctx_methods(reverse_markup).pairs_day(ctx,{group: user_info.user_group, weekday: day});
+        action: ctx => {
+            getUserInfo(ctx.message.from_id,['user_group'])
+                .then(user_info=>{
+                    ctx.scene.leave();
+                    return ctx_methods(reverse_markup).pairs_day(ctx,{group: user_info.user_group, weekday: day});
+                })
+                .catch(() => {
+                    ctx.scene.leave();
+                    return ctx.scene.enter('group');
+                });
         }
     }));
 

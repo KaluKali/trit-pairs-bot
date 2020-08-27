@@ -106,7 +106,7 @@ bot.command('настройки', (ctx) => {
 });
 bot.command('расписание', async (ctx)=>{
     const parsed_message = await new Message(ctx.message.text).parse_pairs_day();
-    ctx_methods(reverse_menu).pairs_day_new(ctx,parsed_message, bot);
+    ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
 });
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){

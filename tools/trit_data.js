@@ -47,7 +47,7 @@ class TritData extends EventEmitter{
                     this.updFSData('group.json',TritData.getGroupsPromise(),callback);
                 }
             } else {
-                this.updFSData('groups.json',TritData.getGroupsPromise(),callback)
+                this.updFSData('group.json',TritData.getGroupsPromise(),callback)
             }
         });
     }

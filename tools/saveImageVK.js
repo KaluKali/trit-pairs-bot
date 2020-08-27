@@ -1,5 +1,5 @@
 const request = require('request');
-const saveImageVK = async (buffer, bot, fc)=>{
+const saveImageVK = async (buffer, bot, cb)=>{
     bot.execute('photos.getMessagesUploadServer')
         .then(upload_data=>{
             const formData = {
@@ -24,8 +24,7 @@ const saveImageVK = async (buffer, bot, fc)=>{
             };
             request(options, async (err, response, body) => {
                 if (err) console.log('Request err: ', err);
-                bot.execute('photos.saveMessagesPhoto', JSON.parse(body))
-                    .then(fc)
+                bot.execute('photos.saveMessagesPhoto', JSON.parse(body)).then(cb)
             });
         });
 };

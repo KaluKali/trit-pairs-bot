@@ -10,8 +10,7 @@ const methods = function (reverse_markup,table_style) {
     if (typeof table_style === 'undefined') table_style = { align: [ 'l', 'l', 'l' ], hsep: '  ' };
 
     return {
-        pairs_day:require('./pairs_now_day')(reverse_markup,table_style),
-        pairs_day_new: require('./pair_now_day_new')(reverse_markup,table_style),
+        pairs_day: require('./pair_now_day')(reverse_markup,table_style),
         find_pairs:require('./find_pairs')(reverse_markup,table_style),
         mailing:require('./mailing')(reverse_markup,table_style),
         find_cabinet:require('./find_cabinet')(reverse_markup,table_style),
