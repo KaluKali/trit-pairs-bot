@@ -1,13 +1,8 @@
 const textToImage = require('../tools/textToImage');
 const saveImageVK = require('../tools/saveImageVK');
-const getUserInfo = require('../tools/user_info');
 
-const sendTextImage = (reverse_markup) =>{
-    return async (content,ctx, user_info)=>{
-        if (!user_info) {
-            user_info = await getUserInfo(ctx.message.from_id, ['theme']);
-        }
-
+const sendTextImage = (reverse_markup) => {
+    return async (content, ctx, user_info)=>{
         textToImage(content, user_info ? user_info.theme : 0,(err,buffer)=>{
             if (err){
                 console.log(err);

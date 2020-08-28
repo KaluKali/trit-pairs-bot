@@ -29,7 +29,7 @@ const pairs_now_day_new = (reverse_markup, table_style) => {
         trit_data.getData( (data, err) => {
             if (!err){
                 let content = `Расписание группы ${group} на \n${weekday}\n\n${table(pairTools.jsonToPairs(data, group, weekday), table_style).toString()}`;
-                sendTextImage(reverse_markup)(content,ctx)
+                sendTextImage(reverse_markup)(content, ctx, user_info)
             } else {
                 if (data){
                     ctx.reply(`!!! Сайт техникума имеет технические неполадки !!!
