@@ -7,7 +7,7 @@ const getUserInfo = require('../tools/user_info');
 const sql_db = new SqlDB();
 const trit_data = new TritData();
 
-const tune_bot = function (reverse_markup) {
+const tune_bot = (reverse_markup) => {
     return new Scene('tune_bot',
         (ctx) => {
             ctx.scene.next();
@@ -19,7 +19,7 @@ const tune_bot = function (reverse_markup) {
             );
         },
         (ctx) => {
-            if (typeof ctx.message.payload !== 'undefined') {
+            if (ctx.message.payload) {
                 JSON.parse(ctx.message.payload).button === 'Да' ? ctx.session.notify_c = true : ctx.session.notify_c = false;
             } else {
                 ctx.session.notify_c = ctx.message.text.indexOf('да') > -1 || ctx.message.text.indexOf('Да') > -1;
@@ -64,24 +64,18 @@ const tune_bot = function (reverse_markup) {
                 );
             }
 
-            let sql;
             let str_reply = 'Вы успешно настроили бота, теперь он:';
-            if (ctx.session.notify_c) {
-                str_reply += '\nприсылает вам дневное расписание каждый день'
-            }
-            if (ctx.session.notify_e_d) {
-                str_reply += '\nсообщает об изменении в расписании'
-            }
-            if (!ctx.session.notify_c && !ctx.session.notify_e_d) {
-                str_reply += '\nничего не делает.'
-            }
+            if (ctx.session.notify_c) str_reply += '\nприсылает вам дневное расписание каждый день';
+            if (ctx.session.notify_e_d) str_reply += '\nсообщает об изменении в расписании';
+            if (!ctx.session.notify_c && !ctx.session.notify_e_d) str_reply += '\nничего не делает.';
 
             const user_info = await getUserInfo(ctx.message.from_id);
 
-            if (typeof user_info == 'undefined') {
+            let sql;
+            if (!user_info) {
                 sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
                 const values = [ctx.message.from_id, ctx.session.notify_c, ctx.session.notify_e_d, 1, ctx.session.stud_group];
-                sql_db.callback(sql, values, function (err) {
+                sql_db.callback(sql, values, (err) =>{
                     if (err) {
                         ctx.reply(str_reply, null, reverse_markup);
                         return console.error(err);

@@ -1,5 +1,5 @@
 const scenes = (reverse_markup) => {
-    if (typeof reverse_markup === 'undefined') reverse_markup = Markup.keyboard([
+    if (!reverse_markup) reverse_markup = Markup.keyboard([
         Markup.button('Расписание', 'positive'),
         Markup.button('Расписание на завтра', 'positive'),
         Markup.button('Настроить уведомления', 'primary'),
@@ -16,6 +16,7 @@ const scenes = (reverse_markup) => {
         require('./erase_account_data')(reverse_markup),
         require('./unknown_command')(reverse_markup),
         require('./week')(reverse_markup),
+        require('./theme')(reverse_markup),
     ];
 };
 

@@ -105,7 +105,7 @@ bot.command('настройки', (ctx) => {
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
-    const parsed_message = await new Message(ctx.message.text).parse_pairs_day();
+    const parsed_message = await new Message(ctx.message.text).parsePairsDay();
     ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
 });
 bot.on((ctx) => {

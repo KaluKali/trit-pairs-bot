@@ -38,7 +38,7 @@ MessageParser.prototype.parse_find = async function () {
 
     return params;
 };
-MessageParser.prototype.parse_pairs_day = async function () {
+MessageParser.prototype.parsePairsDay = async function () {
     const params = {group: -1, weekday: ""};
     //struct: расписание {1,2} {2,3}
     // 1 группа

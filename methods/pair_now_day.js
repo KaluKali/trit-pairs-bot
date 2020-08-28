@@ -17,7 +17,7 @@ const pairs_now_day_new = (reverse_markup, table_style) => {
 
         const user_info = await getUserInfo(ctx.message.from_id);
         if (obj.group === -1){
-            if (typeof user_info === 'undefined'){
+            if (!user_info){
                 return ctx.scene.enter('group');
             } else {
                 obj.group = user_info.user_group;
