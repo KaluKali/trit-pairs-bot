@@ -73,7 +73,7 @@ bot.event('message_new', (ctx,next) => {
 });
 // serialization messages
 bot.use((ctx,next)=>{
-    ctx.message.payload = typeof ctx.message.payload !== 'undefined' ? JSON.parse(ctx.message.payload) : [];
+    ctx.message.payload = ctx.message.payload ? JSON.parse(ctx.message.payload) : [];
     const message = ctx.message.text.split(' ');
     for (let i of leven_list){
         if (levenshtein(i, message[0]) <= 2){

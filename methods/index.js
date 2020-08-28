@@ -7,7 +7,7 @@ const methods = function (reverse_markup,table_style) {
         Markup.button('Настроить уведомления', 'primary'),
         Markup.button('Указать группу', 'primary'),
     ], {columns: 2}).oneTime();
-    if (!table_style) table_style = { align: [ 'l', 'l', 'l' ], hsep: '  ' };
+    if (!table_style) table_style = { align: ['l', 'l', 'l' ], hsep: '  ' };
 
     return {
         pairs_day: require('./pair_now_day')(reverse_markup,table_style),

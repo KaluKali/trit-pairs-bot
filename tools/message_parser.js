@@ -10,6 +10,7 @@ const MessageParser = function (text) {
         .replace(/ {1,}/g,' ')
         .split(' ');
     // regxp: remove duplicate spaces
+    // for remove first functional word
     this.args.shift();
 };
 MessageParser.prototype.parse_find = async function () {
@@ -47,8 +48,8 @@ MessageParser.prototype.parsePairsDay = async function () {
     let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
     this.args.forEach((param) => {
         if (param === 'на') return;
-        else if (param.indexOf('завтр')!==-1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
-        else if (param.indexOf('сегодн')!==-1) return params.weekday = ServerTime.getWeekday(server_time.getDay());
+        else if (param.indexOf('завтр') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
+        else if (param.indexOf('сегодн') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay());
         else if (isNaN(+param)) {
             if (ServerTime.isWeekday(param)) {
                 params.weekday = '' + param;
@@ -65,7 +66,7 @@ MessageParser.prototype.parsePairsDay = async function () {
     });
     return params;
 };
-MessageParser.prototype.parse_cabinet = function (){
+MessageParser.prototype.parse_cabinet = function() {
     const params = {cab: '', weekday: ''};
     //struct: кабинет {1} {2}
     // 1 номер кабинета
@@ -75,7 +76,7 @@ MessageParser.prototype.parse_cabinet = function (){
         if (ServerTime.isWeekday(param)) {
             return params.weekday = param;
         } else {
-            for (let day of ServerTime.Weekdays()) {
+            for (const day of ServerTime.Weekdays()) {
                 if (levenshtein(day, param) <= 2) return params.weekday = day;
             }
             return params.cab = param

@@ -1,15 +1,14 @@
 const TritData = require('./trit_data');
 const trit_data = new TritData();
 
-const PairTools = function () {
+const PairTools = function() {};
 
-};
-
-PairTools.prototype.jsonToPairs = (data, group, weekday) =>{
+PairTools.prototype.jsonToPairs = (data, group, weekday) => {
     let i_pair = 1;
-    const data_day_s = [];
+    let data_day_s = [];
+
     data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
-        if (i < 4){ // Pair limit
+        if (i < 5){ // Pair limit
             if (pair.room === false) pair.room = '—';
             if (pair.name === false) pair.name = '—';
             data_day_s.push(

@@ -1,4 +1,4 @@
-module.exports = function levenshtein(s1, s2, costs) {
+module.exports = (s1, s2, costs) => {
     let i, j, m, n, flip, ch, chl, ii, ii2, cost, cutHalf;
     m = s1.length;
     n = s2.length;
