@@ -107,7 +107,7 @@ bot.command('настройки', (ctx) => {
 bot.command('расписание', async (ctx)=>{
     const parsed_message = await new Message(ctx.message.text).parsePairsDay();
     ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
-    ctx_methods(reverse_menu).mailing(server_time.getWeekday(), bot);
+    // ctx_methods(reverse_menu).mailing(server_time.getWeekday(), bot);
 });
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
