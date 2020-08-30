@@ -5,19 +5,14 @@ const levenshtein = require('../tools/levenshtein');
 const server_time = new ServerTime();
 const trit_data = new TritData();
 
-const MessageParser = function (text) {
-    this.args = text.toLowerCase()
-        .replace(/ {1,}/g,' ')
-        .split(' ');
-    // regxp: remove duplicate spaces
-    // for remove first functional word
-    this.args.shift();
-};
-MessageParser.prototype.parse_find = async function () {
-    const params = {pair:'',group:-1,weekday:''};
-    const valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
+function Message() {
+}
 
-    this.args.forEach((param) => {
+Message.prototype.parseFind = async function (args) {
+    const params = {pair:'',group:-1,weekday:''};
+    const valid_groups = await new Promise(resolve => trit_data.getGroups(resolve));
+
+    args.forEach((param) => {
         if (param === 'на') return;
         if (param.indexOf('групп') !== -1) return;
         if (isNaN(+param)) {
@@ -39,14 +34,14 @@ MessageParser.prototype.parse_find = async function () {
 
     return params;
 };
-MessageParser.prototype.parsePairsDay = async function () {
+Message.prototype.parsePairsDay = async function (args) {
     const params = {group: -1, weekday: ""};
     //struct: расписание {1,2} {2,3}
     // 1 группа
     // 2
     // 3 день недели
-    let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
-    this.args.forEach((param) => {
+    let valid_groups = await new Promise(resolve => trit_data.getGroups(resolve));
+    args.forEach((param) => {
         if (param === 'на') return;
         else if (param.indexOf('завтр') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
         else if (param.indexOf('сегодн') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay());
@@ -66,13 +61,13 @@ MessageParser.prototype.parsePairsDay = async function () {
     });
     return params;
 };
-MessageParser.prototype.parse_cabinet = function() {
+Message.prototype.parseCabinet = function(args) {
     const params = {cab: '', weekday: ''};
     //struct: кабинет {1} {2}
     // 1 номер кабинета
     // 2 день недели
 
-    this.args.forEach((param) => {
+    args.forEach((param) => {
         if (ServerTime.isWeekday(param)) {
             return params.weekday = param;
         } else {
@@ -85,4 +80,19 @@ MessageParser.prototype.parse_cabinet = function() {
     return params;
 };
 
-module.exports = MessageParser;
+for (let funcname in Message.prototype){
+    function argsDecorator(func){
+        return function (text) {
+            let args = text.toLowerCase()
+                .replace(/ {1,}/g,' ')
+                .split(' ');
+            // regxp: remove duplicate spaces
+            // for remove first functional word
+            args.shift();
+            return func.call(this, args)
+        }
+    }
+    Message.prototype[funcname] = argsDecorator(Message.prototype[funcname])
+}
+
+module.exports = new Message();

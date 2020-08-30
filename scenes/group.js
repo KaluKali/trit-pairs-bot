@@ -13,7 +13,7 @@ const group = function (reverse_markup) {
     return new Scene('group',
         (ctx) => {
             ctx.scene.next();
-            trit_data.getValidGroups((groups)=>{
+            trit_data.getGroups((groups)=>{
                 ctx.reply('Номер вашей группы?', null, Markup
                     .keyboard(groups, {columns: 3}).oneTime()
                 );
@@ -22,7 +22,7 @@ const group = function (reverse_markup) {
         async (ctx) => {
             ctx.session.stud_group = +ctx.message.text;
 
-            let valid_groups = await new Promise(resolve => trit_data.getValidGroups(resolve));
+            let valid_groups = await new Promise(resolve => trit_data.getGroups(resolve));
             if (valid_groups.indexOf(+ctx.session.stud_group) === -1) {
                 ctx.scene.leave();
                 return ctx.reply('Указанная группа неверная, бот не настроен.',

@@ -42,7 +42,7 @@ const find_pairs = (reverse_markup, table_style) => {
     return async (ctx,obj)=>{
         if (typeof obj !== 'undefined' || typeof ctx !== 'undefined'){
             if (obj.pair === ""){
-                return ctx.reply('Ты не указал какую пару нужно найти!',null,reverse_markup);
+                return ctx.reply('Вы не указали какую пару нужно найти!',null,reverse_markup);
             }
         } else {
             return new Error('find_Pairs: Argument error');
@@ -54,7 +54,7 @@ const find_pairs = (reverse_markup, table_style) => {
 
         trit_data.getData((data) => {
             const fin = [];
-            trit_data.getValidGroups((groups) =>{
+            trit_data.getGroups((groups) =>{
                 groups.forEach((group_f) => {
                     for (let weekday_f of Object.keys(data[group_f]['weekdays'])){ // data[group_f] is not iterable
                         data[group_f]['weekdays'][weekday_f].pairs.forEach((pair_f)=> {

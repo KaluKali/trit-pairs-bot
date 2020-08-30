@@ -11,7 +11,7 @@ const schedule = require('node-schedule');
 const TritData = require('./tools/trit_data');
 
 const ServerTime = require('./tools/server_time');
-const Message = require('./tools/message_parser');
+const Message = require('./tools/message');
 const levenshtein = require('./tools/levenshtein');
 // tools
 const server_time = new ServerTime();
@@ -94,19 +94,19 @@ bot.command('неделя', (ctx)=>{
     ctx.scene.enter('week')
 });
 bot.command('найди', async (ctx)=>{
-    let obj = await new Message(ctx.message.text).parse_find();
-    ctx_methods(reverse_menu).find_pairs(ctx,obj);
+    let msg = await Message.parseFind(ctx.message.text);
+    ctx_methods(reverse_menu).find_pairs(ctx,msg);
 });
 bot.command('кабинет', async (ctx)=>{
-    let obj = await new Message(ctx.message.text).parse_cabinet();
-    ctx_methods(reverse_menu).find_cabinet(ctx,obj);
+    let msg = await Message.parseCabinet(ctx.message.text);
+    ctx_methods(reverse_menu).find_cabinet(ctx,msg);
 });
 bot.command('настройки', (ctx) => {
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
-    const parsed_message = await new Message(ctx.message.text).parsePairsDay();
-    ctx_methods(reverse_menu).pairs_day(ctx,parsed_message);
+    let msg = await Message.parsePairsDay(ctx.message.text);
+    ctx_methods(reverse_menu).pairs_day(ctx,msg);
     // ctx_methods(reverse_menu).mailing(server_time.getWeekday(), bot);
 });
 bot.on((ctx) => {
