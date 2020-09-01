@@ -16,14 +16,14 @@ const textToImage = (text, theme, cb) => {
         };
     }
 
-    gm(1000, 1000, config_theme.background)
+    gm(2200, 1500, config_theme.background)
         .fill(config_theme.font_color)
         .fontSize('46')
-        // .font('baskvill.ttf')
+        // .font(baskvill.ttf')
         .out('-background', config_theme.background)
         .out('-kerning','1')
         .out('-gravity', 'west')
-        .out('-size', '1000x', `caption:${text}`)
+        .out('-size', '2200x', `caption:${text}`)
         .out('-composite')
         .out('-trim')
         .borderColor(config_theme.background)

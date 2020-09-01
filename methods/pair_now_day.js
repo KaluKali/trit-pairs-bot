@@ -32,9 +32,8 @@ const pairs_now_day_new = (reverse_markup, table_style) => {
                 sendTextImage(reverse_markup)(content, ctx, user_info)
             } else {
                 if (data){
-                    ctx.reply(`!!! Сайт техникума имеет технические неполадки !!!
-                    Список уроков для ${group} группы на ${weekday}.\n
-                    ${table(pairTools.jsonToPairs(data, group, weekday), table_style).toString()}`,null,reverse_markup);
+                    let content = `!!! Сайт техникума имеет технические неполадки !!!\nРасписание группы ${group} на \n${weekday}\n\n${table(pairTools.jsonToPairs(data, group, weekday), table_style).toString()}`;
+                    sendTextImage(reverse_markup)(content, ctx, user_info)
                 } else {
                     ctx.reply('Технические неполадки, скоро все исправим.', null, reverse_markup);
                 }

@@ -18,6 +18,7 @@ const server_time = new ServerTime();
 const trit_data = new TritData();
 const saveImageVK = require('./tools/saveImageVK');
 const gm = require('gm').subClass({imageMagick: true, appPath:'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\'});
+// const UsersDB = require('./tools/UsersDB');
 // resource
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание на сегодня', 'positive'),
@@ -37,8 +38,12 @@ schedule.scheduleJob('0 0 */6 ? * *', ()=>{
     console.log('Timeout to restart bot is set.');
     setTimeout(()=>{
         bot.start();
-        bot.startPolling(() => {
-            console.log('Bot restarted.')
+        bot.startPolling((err) => {
+            if (!err) {
+                console.log('Bot restarted.')
+            } else {
+                console.error(err)
+            }
         });
     }, 30000);
 });
@@ -107,6 +112,7 @@ bot.command('настройки', (ctx) => {
 bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text);
     ctx_methods(reverse_menu).pairs_day(ctx,msg);
+    // trit_data.CheckChange()
     // ctx_methods(reverse_menu).mailing(server_time.getWeekday(), bot);
 });
 bot.on((ctx) => {
@@ -196,6 +202,10 @@ trit_data.on('changes', async (data_changes)=>{
 
     // todo save Conversations-id into db
 });
-bot.startPolling(() => {
-    console.log('Bot started.')
+bot.startPolling((err) => {
+    if (!err) {
+        console.log('Bot started');
+    } else {
+        console.error(err);
+    }
 });

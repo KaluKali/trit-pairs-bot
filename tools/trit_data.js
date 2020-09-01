@@ -17,9 +17,6 @@ const pairs_time = [
     '16:25 - 17:10',
 ];
 
-let cache_groups;
-let cache_data;
-
 
 class TritData extends EventEmitter{
     static getDataPromise(){
@@ -28,56 +25,35 @@ class TritData extends EventEmitter{
     static getGroupsPromise(){
         return api('https://trit.biz/rr/json.php');
     }
-    constructor() {
-        super();
-        this.getFSData('data.json',(data_fs,err)=>{
-            if (!err){
-                const back_date = new Date(data_fs.date);
-                if (back_date.getDate() === now_date.getDate()){
-                    cache_data = data_fs;
-                } else {
-                    this.updFSData('data.json',TritData.getDataPromise(), data_inet=>cache_data = data_inet)
-                }
-            } else {
-                this.updFSData('data.json',TritData.getDataPromise(), data_inet=>cache_data = data_inet);
-            }
-        });
-        this.getFSData('group.json',(data_fs,err)=>{
-            if (!err){
-                const back_date = new Date(data_fs.date);
-                if (back_date.getDate() === now_date.getDate()){
-                    cache_groups = data_fs
-                } else {
-                    this.updFSData('group.json',TritData.getGroupsPromise(), data_inet=>cache_groups = data_inet);
-                }
-            } else {
-                this.updFSData('group.json',TritData.getGroupsPromise(), data_inet=>cache_groups = data_inet)
-            }
-        });
-    }
     getData(callback){
-        const back_date = new Date(cache_data.date);
-        if (back_date.getDate() === now_date.getDate()) {
-            callback(cache_data.data)
-        } else {
-            this.updFSData('data.json',TritData.getDataPromise(), data_inet=>{
-                cache_data = data_inet;
-                callback(cache_data.data);
-            });
-        }
+        this.getFSData('data.json',(data,err)=>{
+            if (!err){
+                const back_date = new Date(data.date);
+                if (back_date.getDate() === now_date.getDate()){
+                    callback(data.data);
+                } else {
+                    this.updFSData('data.json',TritData.getDataPromise(),callback)
+                }
+            } else {
+                this.updFSData('data.json',TritData.getDataPromise(),callback);
+            }
+        });
     }
     getGroups(callback){
-        const back_date = new Date(cache_groups.date);
-        if (back_date.getDate() === now_date.getDate()) {
-            callback(cache_groups.data)
-        } else {
-            this.updFSData('data.json',TritData.getDataPromise(), data_inet=>{
-                cache_groups = data_inet;
-                callback(cache_groups.data);
-            });
-        }
+        this.getFSData('group.json',(data,err)=>{
+            if (!err){
+                const back_date = new Date(data.date);
+                if (back_date.getDate() === now_date.getDate()){
+                    callback(data.data);
+                } else {
+                    this.updFSData('group.json',TritData.getGroupsPromise(),callback);
+                }
+            } else {
+                this.updFSData('group.json',TritData.getGroupsPromise(),callback)
+            }
+        });
     }
-    CheckChange() {
+    CheckChange(){
         TritData.getDataPromise().then(data_inet=>{
             let pairs_change;
             this.getFSData('data.json',(data_fs,err)=>{
@@ -101,15 +77,14 @@ class TritData extends EventEmitter{
                                 });
                             }
                         }
-                        if (pairs_change){
-                            this.emit("changes",pairs_change)
-                        }
-                    }).catch(err => this.emit(undefined,err))
+
+                        if (pairs_change) this.emit("changes",pairs_change);
+                    }).catch(err => console.log(`Check pairs change error:\n${err}`))
                 } else {
-                    this.updFSData('data.json', TritData.getDataPromise())
+                    this.updFSData('data.json',TritData.getDataPromise())
                 }
             });
-        });
+        }).catch(err => console.log(`Check pairs change error:\n${err}`));
     }
     PairsTime(){
         return pairs_time;
