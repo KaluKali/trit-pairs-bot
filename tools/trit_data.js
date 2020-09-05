@@ -12,7 +12,7 @@ const pairs_time = [
     '11:40 - 12:25',
     '12:45 - 13:30',
     '13:50 - 14:35',
-    '14:30 - 15:25',
+    '14:40 - 15:25',
     '15:35 - 16:20',
     '16:25 - 17:10',
 ];
@@ -55,6 +55,7 @@ class TritData extends EventEmitter{
     }
     CheckChange(){
         TritData.getDataPromise().then(data_inet=>{
+            // let pairChanges = [];
             let pairs_change;
             this.getFSData('data.json',(data_fs,err)=>{
                 if (!err){
@@ -73,16 +74,27 @@ class TritData extends EventEmitter{
                                             'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[i_inet],
                                             'stock': pair_inet
                                         };
+                                        // pairChanges.push({
+                                        //     group: one_group,
+                                        //     weekday: one_weekday,
+                                        //     num: i_inet+1,
+                                        //     changes: {
+                                        //         'stock': data_fs.data[one_group]['weekdays'][one_weekday].pairs[i_inet],
+                                        //         'modified': pair_inet
+                                        //     }
+                                        // });
                                     }
                                 });
                             }
                         }
+                        // if (pairChanges.length > 0) this.emit('changes', pairs_change, pairChanges);
+                        if (pairs_change) this.emit('changes', pairs_change);
 
-                        if (pairs_change) this.emit("changes",pairs_change);
                     }).catch(err => console.log(`Check pairs change error:\n${err}`))
                 } else {
                     this.updFSData('data.json',TritData.getDataPromise())
                 }
+
             });
         }).catch(err => console.log(`Check pairs change error:\n${err}`));
     }
@@ -96,7 +108,7 @@ class TritData extends EventEmitter{
                     if (!err){
                         callback(JSON.parse(data));
                     } else {
-                        console.error(err);
+                        console.error(`getFSData: ${err}`);
                         callback(undefined,err)
                     }
                 });
@@ -109,7 +121,7 @@ class TritData extends EventEmitter{
     updFSData(name, promise, callback){
         promise.then(response=>{
             try {
-                fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data:response}),"utf-8");
+                fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data:response}),'utf-8');
             } catch (e) {
                 console.warn(e);
             } finally {

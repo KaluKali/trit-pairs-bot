@@ -5,7 +5,7 @@ const getUserInfo = require('../tools/user_info');
 const ctx_methods = require('../methods/index');
 
 
-const settings = reverse_markup => {
+const settings = (reverse_markup, table_style, res) => {
 
     let weekdays = ServerTime.Weekdays();
     weekdays.shift();
@@ -13,17 +13,16 @@ const settings = reverse_markup => {
     const buttons = weekdays.map(day=>({
         text:day,
         color:'primary',
-        action: ctx => {
-            getUserInfo(ctx.message.from_id,['user_group'])
-                .then(user_info=>{
-                    ctx.scene.leave();
-                    return ctx_methods(reverse_markup).pairs_day(ctx,{group: user_info.user_group, weekday: day});
-                })
-                .catch(() => {
-                    ctx.scene.leave();
-                    return ctx.scene.enter('group');
-                });
-        }
+        action: ctx => getUserInfo(ctx.message.from_id,['user_group'])
+            .then(user_info=>{
+                ctx.scene.leave();
+                return ctx_methods(reverse_markup, table_style, res).pairs_day(ctx, {group: user_info.user_group, weekday: day});
+            })
+            .catch((err) => {
+                console.log(`Scene settings: ${err}`);
+                ctx.scene.leave();
+                return ctx.scene.enter('group');
+            })
     }));
 
     return new Scene('week',
@@ -40,7 +39,7 @@ const settings = reverse_markup => {
             );
         },
         (ctx) => {
-            if (typeof ctx.message.payload !== 'undefined') {
+            if (!ctx.message.payload) {
                 const buttons_opt = JSON.parse(ctx.message.payload);
 
                 buttons.forEach(button=>{if (button.text === buttons_opt.button) button.action(ctx)});

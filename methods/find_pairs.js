@@ -1,12 +1,5 @@
 const table = require('text-table');
-
-const TritData = require('../tools/trit_data');
-
 const levenshtein = require('../tools/levenshtein');
-// const bigrams = require('../tools/bigrams')
-
-const trit_data = new TritData();
-
 
 const abbreviation = [
     "ТПЦМИ",
@@ -38,23 +31,19 @@ function isAbbreviation(txt){
     return false;
 }
 
-const find_pairs = (reverse_markup, table_style) => {
-    return async (ctx,obj)=>{
-        if (typeof obj !== 'undefined' || typeof ctx !== 'undefined'){
-            if (obj.pair === ""){
-                return ctx.reply('Вы не указали какую пару нужно найти!',null,reverse_markup);
-            }
-        } else {
-            return new Error('find_Pairs: Argument error');
-        }
-        const numbers = [0,1,2,3,4,5,6,7,8,9];
-        const pair = obj.pair;
-        const group = obj.group;
-        const weekday = obj.weekday !== "" ? obj.weekday : -1;
+const find_pairs = (reverse_markup, table_style, res) => {
+    return async (ctx, message)=>{
+        if (!ctx || !message) return new Error('find_Pairs: Argument error');
+        if (message.pair === "") return ctx.reply('Вы не указали какую пару нужно найти!',null,reverse_markup);
 
-        trit_data.getData((data) => {
+        const numbers = [0,1,2,3,4,5,6,7,8,9];
+        const pair = message.pair;
+        const group = message.group;
+        const weekday = message.weekday !== "" ? message.weekday : -1;
+
+        res.data.getData((data) => {
             const fin = [];
-            trit_data.getGroups((groups) =>{
+            res.data.getGroups((groups) =>{
                 groups.forEach((group_f) => {
                     for (let weekday_f of Object.keys(data[group_f]['weekdays'])){ // data[group_f] is not iterable
                         data[group_f]['weekdays'][weekday_f].pairs.forEach((pair_f)=> {
@@ -63,8 +52,6 @@ const find_pairs = (reverse_markup, table_style) => {
 
                             let pair_f_low = pair_f.name.toLowerCase().split(' ');
                             let pair_p_low = pair.toLowerCase().split(' ');
-
-                            // console.log(pair_f_low, pair_f.room,group_f)
 
                             pair_f_low.forEach((pf)=>{
                                 if (pf.length > 1){

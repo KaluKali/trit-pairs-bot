@@ -1,32 +1,28 @@
 const table = require('text-table');
-const TritData = require('../tools/trit_data');
-const trit_data = new TritData();
 
-const find_cabinet = (reverse_markup, table_style) => {
-    return async (ctx, obj) => { //send pairs to people
-        if (typeof ctx === 'undefined' || typeof obj === 'undefined'){
-            return new Error('pairs_Day: Argument error');
-        }
-        if (obj.cab === '') return ctx.reply('Вы не указали кабинет!', null, reverse_markup);
+const find_cabinet = (reverse_markup, table_style, res) => {
+    return async (ctx, message) => { //send pairs to people
+        if (!ctx || !message) return new Error('pairs_Day: Argument error');
+        if (message.cab === '') return ctx.reply('Вы не указали кабинет!', null, reverse_markup);
 
-        const weekday = obj.weekday;
-        const cabinet = obj.cab;
+        const weekday = message.weekday;
+        const cabinet = message.cab;
 
-        trit_data.getData( (data) => {
+        res.data.getData((data) => {
             let cabs=[];
             for (let i of Object.keys(data)){
                 if (weekday === ""){
-                    for (let wd of Object.keys(data[i]['weekdays'])){
-                        for (let item of data[i]['weekdays'][wd]['pairs']){
+                    for (let weekday of Object.keys(data[i]['weekdays'])){
+                        for (let item of data[i]['weekdays'][weekday]['pairs']){
                             if (item['room'] && item['room'].indexOf(cabinet)!== -1){
-                                cabs.push([item['room'], i, wd, item['name']]);
+                                cabs.push([item['room'], i, weekday, item['name']]);
                             }
                         }
                     }
                 } else {
-                    for (let item of data[i]['weekdays'][weekday]['pairs']){
-                        if (item['room'] && item['room'].indexOf(cabinet)!== -1){
-                            cabs.push([item['room'], i,item['name']]);
+                    for (let pair of data[i]['weekdays'][weekday]['pairs']){
+                        if (pair['room'] && pair['room'].indexOf(cabinet)!== -1){
+                            cabs.push([pair['room'], i,pair['name']]);
                         }
                     }
                 }

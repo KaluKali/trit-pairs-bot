@@ -8,14 +8,16 @@ const Session = require('node-vk-bot-api/lib/session');
 const Stage = require('node-vk-bot-api/lib/stage');
 const Markup = require('node-vk-bot-api/lib/markup');
 const schedule = require('node-schedule');
-const TritData = require('./tools/trit_data');
 
+const TritData = require('./tools/trit_data');
 const ServerTime = require('./tools/server_time');
+const SqlDb = require('./tools/sql_data');
 const Message = require('./tools/message');
 const levenshtein = require('./tools/levenshtein');
 // tools
 const server_time = new ServerTime();
 const trit_data = new TritData();
+const sql_db = new SqlDb();
 const saveImageVK = require('./tools/saveImageVK');
 const gm = require('gm').subClass({imageMagick: true, appPath:'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\'});
 // const UsersDB = require('./tools/UsersDB');
@@ -31,7 +33,7 @@ const ctx_methods = require('./methods/index');
 const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
 // jobs
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
-    return ctx_methods(reverse_menu).mailing(server_time.getWeekday(),bot);
+    return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),bot);
 });
 schedule.scheduleJob('0 0 */6 ? * *', ()=>{
     bot.stop();
@@ -56,7 +58,7 @@ schedule.scheduleJob('0 * * * *', ()=>{
 });
 // scenes
 bot.use(new Session().middleware());
-bot.use(new Stage(...ctx_scenes(reverse_menu)).middleware());
+bot.use(new Stage(...ctx_scenes(reverse_menu, null, { data: trit_data, db: sql_db })).middleware());
 // event for processing an invitation to a conversation
 bot.event('message_new', (ctx,next) => {
     try {
@@ -77,7 +79,7 @@ bot.event('message_new', (ctx,next) => {
     }
 });
 // serialization messages
-bot.use((ctx,next)=>{
+bot.use((ctx, next)=>{
     ctx.message.payload = ctx.message.payload ? JSON.parse(ctx.message.payload) : [];
     const message = ctx.message.text.split(' ');
     for (let i of leven_list){
@@ -96,23 +98,22 @@ bot.command('поиск пары', (ctx)=>{
     ctx.reply('')
 });
 bot.command('неделя', (ctx)=>{
-    ctx.scene.enter('week')
+    ctx.scene.enter('week');
 });
 bot.command('найди', async (ctx)=>{
     let msg = await Message.parseFind(ctx.message.text);
-    ctx_methods(reverse_menu).find_pairs(ctx,msg);
+    ctx_methods(reverse_menu, null, { data: trit_data }).find_pairs(ctx,msg);
 });
 bot.command('кабинет', async (ctx)=>{
     let msg = await Message.parseCabinet(ctx.message.text);
-    ctx_methods(reverse_menu).find_cabinet(ctx,msg);
+    ctx_methods(reverse_menu, null, { data: trit_data }).find_cabinet(ctx,msg);
 });
 bot.command('настройки', (ctx) => {
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text);
-    ctx_methods(reverse_menu).pairs_day(ctx,msg);
-    // trit_data.CheckChange()
+    ctx_methods(reverse_menu, null, { data: trit_data }).pairs_day(ctx,msg);
     // ctx_methods(reverse_menu).mailing(server_time.getWeekday(), bot);
 });
 bot.on((ctx) => {
@@ -120,7 +121,7 @@ bot.on((ctx) => {
         ctx.scene.enter('unknown_command',0)
     }
 });
-trit_data.on('changes', async (data_changes)=>{
+trit_data.on('changes', (data_changes)=>{
     let pairDayWeek = {
         'понедельник':[],
         'вторник':[],
@@ -137,6 +138,25 @@ trit_data.on('changes', async (data_changes)=>{
             })
         }
     }
+    // console.log(pairDayWeek)
+    // let week_markups = [];
+    // const title_indent = 3;
+    //
+    // let weekdays = ServerTime.Weekdays();
+    // weekdays.shift();
+    //
+    // weekdays.forEach(weekday=>{
+    //     let pangoMarkup = `\n<span><b>${weekday[0].toUpperCase() + weekday.slice(1)}</b>\n\n`;
+    //     (new_changes.filter(pair=>pair.weekday===weekday)).forEach(dayChanges=>{
+    //         pangoMarkup += `\nГруппа ${dayChanges.group}\n\n`;
+    //         for (let pairIndex in dayChanges.changes){
+    //             let stock = `${dayChanges.changes[pairIndex].stock.name ? dayChanges.changes[pairIndex].stock.name : '—'} ${dayChanges.changes[pairIndex].stock.room ? `  каб. ${dayChanges.changes[pairIndex].stock.room}` : '  каб. —'}`;
+    //             let modify = `${dayChanges.changes[pairIndex].modified.name ? dayChanges.changes[pairIndex].modified.name : '—'} ${dayChanges.changes[pairIndex].modified.room ? `  каб. ${dayChanges.changes[pairIndex].modified.room}` : '  каб. —'}`;
+    //             pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>\n`
+    //         }
+    //     })
+    // });
+    // return;
 
     let week_markups = [];
     const title_indent = 3;
@@ -170,34 +190,40 @@ trit_data.on('changes', async (data_changes)=>{
     } else {
         for (let i = friday_indent - tuesday_indent; i>0; i--) week_markups[1] += '\n'
     }
+
     for (let i=0;i<week_markups.length;i++) week_markups[i] += '</span>';
 
-    let changeGraphic =
-        gm().out('-kerning','1')
-            .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 3)).join('')}</markup>`)
-            .out('-orient','top-right').out('+append')
-            .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 6 && index >= 3)).join('')}</markup>`)
-            .out('-orient','top-right')
-            .out('+append');
-
-    changeGraphic
+    gm().out('-kerning','1')
+        .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 3)).join('')}</markup>`)
+        .out('-orient','top-right').out('+append')
+        .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 6 && index >= 3)).join('')}</markup>`)
+        .out('-orient','top-right')
+        .out('+append')
         .borderColor('#FFFFFF')
         .border(20,20)
-        .toBuffer('JPEG',(err,buffer)=>{
+        .toBuffer('JPEG',async (err,buffer)=>{
             if (err){
-                console.log(err);
-                return;
-            }
-            saveImageVK(buffer,bot,async (photo_data)=>{
+                console.log(`toBuffer in main.js error: ${err}`);
                 for (let i = 1; i < 3;i++){
                     await bot.execute('messages.send', {
                         peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
                         random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                        attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
+                        message: 'Выложено новое расписание!',
                     }).catch(error => console.log(error));
                 }
-                trit_data.updFSData('data.json', TritData.getDataPromise());
-            });
+                return trit_data.updFSData('data.json', TritData.getDataPromise());
+            } else {
+                await saveImageVK(buffer,bot,async (photo_data)=>{
+                    for (let i = 1; i < 3;i++){
+                        await bot.execute('messages.send', {
+                            peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
+                            random_id: Math.floor(Math.random() * Math.floor(10000000000)),
+                            attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
+                        }).catch(error => console.log(error));
+                    }
+                    trit_data.updFSData('data.json', TritData.getDataPromise());
+                });
+            }
         });
 
     // todo save Conversations-id into db

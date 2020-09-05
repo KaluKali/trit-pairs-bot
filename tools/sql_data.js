@@ -1,6 +1,6 @@
 const mysql = require('mysql2');
 
-const SqlDB = function () {
+function SqlDB() {
     this.connection = mysql.createConnection({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
@@ -10,7 +10,7 @@ const SqlDB = function () {
     this.connection.connect(function(err){
         if (err) return Error("MAIN Ошибка подключения к MySQL: " + err.message);
     });
-};
+}
 
 SqlDB.prototype.getData = function(sql,values){
     return new Promise(resolve =>{
