@@ -1,4 +1,8 @@
-const gm = require('gm').subClass({imageMagick: true, appPath:'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\'});
+const gmSettings = {
+    imageMagick: true,
+};
+if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\';
+const gm = require('gm').subClass(gmSettings);
 
 const textToImage = (text, theme, cb) => {
 

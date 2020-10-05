@@ -19,7 +19,11 @@ const server_time = new ServerTime();
 const trit_data = new TritData();
 const sql_db = new SqlDb();
 const saveImageVK = require('./tools/saveImageVK');
-const gm = require('gm').subClass({imageMagick: true, appPath:'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\'});
+const gmSettings = {
+    imageMagick: true,
+};
+if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\';
+const gm = require('gm').subClass(gmSettings);
 // const UsersDB = require('./tools/UsersDB');
 // resource
 const reverse_menu = Markup.keyboard([
