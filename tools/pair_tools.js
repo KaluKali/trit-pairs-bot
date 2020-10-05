@@ -7,6 +7,14 @@ PairTools.prototype.jsonToPairs = (data, group, weekday) => {
     let i_pair = 1;
     let data_day_s = [];
 
+    if (!data) {
+        console.error(`Error data: ${data}`);
+        return [
+            ['Внутренняя','ошибка', ''],
+            ['Повторите','запрос','позже']
+        ]
+    }
+    // постоянно прилетает неправильная data
     data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
         if (i < 5){ // Pair limit
             if (pair.room === false) pair.room = '—';

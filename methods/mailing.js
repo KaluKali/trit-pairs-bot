@@ -1,7 +1,6 @@
 const table = require('text-table');
 const pairTools = require('../tools/pair_tools').default;
 
-
 const mailing = (reverse_markup, table_style, res) => {
     return async (weekday, bot)=>{
         const sql = `SELECT vk_id, user_group FROM ${process.env.DB_TABLE} WHERE notify AND notify_e_d`;

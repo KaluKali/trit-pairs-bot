@@ -15,6 +15,7 @@ Message.prototype.parseFind = async function (args) {
     args.forEach((param) => {
         if (param === 'на') return;
         if (param.indexOf('групп') !== -1) return;
+        if (param.indexOf('сегодн') !== -1) return params.weekday = server_time.getWeekday();
         if (isNaN(+param)) {
             if (ServerTime.isWeekday(param)) {
                 return params.weekday = param;

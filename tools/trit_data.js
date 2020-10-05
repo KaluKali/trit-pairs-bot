@@ -90,13 +90,13 @@ class TritData extends EventEmitter{
                         // if (pairChanges.length > 0) this.emit('changes', pairs_change, pairChanges);
                         if (pairs_change) this.emit('changes', pairs_change);
 
-                    }).catch(err => console.log(`Check pairs change error:\n${err}`))
+                    }).catch(err => console.error(`Check pairs change error:\n${err}`))
                 } else {
                     this.updFSData('data.json',TritData.getDataPromise())
                 }
 
             });
-        }).catch(err => console.log(`Check pairs change error:\n${err}`));
+        }).catch(err => console.error(`Check pairs change error:\n${err}`));
     }
     PairsTime(){
         return pairs_time;

@@ -209,7 +209,7 @@ trit_data.on('changes', (data_changes)=>{
                         peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
                         random_id: Math.floor(Math.random() * Math.floor(10000000000)),
                         message: 'Выложено новое расписание!',
-                    }).catch(error => console.log(error));
+                    }).catch(error => console.error(`Main.js error: ${error}`));
                 }
                 return trit_data.updFSData('data.json', TritData.getDataPromise());
             } else {
@@ -219,19 +219,15 @@ trit_data.on('changes', (data_changes)=>{
                             peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
                             random_id: Math.floor(Math.random() * Math.floor(10000000000)),
                             attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
-                        }).catch(error => console.log(error));
+                        }).catch(error => console.error(error));
                     }
                     trit_data.updFSData('data.json', TritData.getDataPromise());
                 });
             }
         });
-
     // todo save Conversations-id into db
 });
 bot.startPolling((err) => {
-    if (!err) {
-        console.log('Bot started');
-    } else {
-        console.error(err);
-    }
+    if (!err) console.log('Bot started');
+    else console.error(err);
 });

@@ -13,11 +13,9 @@ const find_cabinet = (reverse_markup, table_style, res) => {
             for (let i of Object.keys(data)){
                 if (weekday === ""){
                     for (let weekday of Object.keys(data[i]['weekdays'])){
-                        for (let item of data[i]['weekdays'][weekday]['pairs']){
-                            if (item['room'] && item['room'].indexOf(cabinet)!== -1){
-                                cabs.push([item['room'], i, weekday, item['name']]);
-                            }
-                        }
+                        cabs = [...cabs,...data[i]['weekdays'][weekday]['pairs']
+                            .filter(item=>item.room === cabinet)
+                            .map(item=>[item['room'], i,item['name']])]
                     }
                 } else {
                     for (let pair of data[i]['weekdays'][weekday]['pairs']){
@@ -27,6 +25,7 @@ const find_cabinet = (reverse_markup, table_style, res) => {
                     }
                 }
             }
+
 
             const t = table(cabs,table_style);
             ctx.reply(`Список пар для кабинета №${cabinet} на ${weekday !== "" ? weekday : "всю неделю"}.\n\n${t.toString()}`,null,reverse_markup);

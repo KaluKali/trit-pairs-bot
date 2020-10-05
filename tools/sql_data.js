@@ -44,8 +44,8 @@ SqlDB.prototype.reopen = function(){
         password: process.env.DB_PASS,
     });
     this.connection.connect(function(err){
-        if (err) return Error("REOPEN Ошибка подключения " + err.message);
-        else console.log('reopened connection to mysql-db');
+        if (err) return Error("Recon. Ошибка подключения " + err.message);
+        else console.log('Reconnection to mysql-db');
     });
 };
 

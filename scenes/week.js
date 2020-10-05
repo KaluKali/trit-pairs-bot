@@ -19,7 +19,7 @@ const settings = (reverse_markup, table_style, res) => {
                 return ctx_methods(reverse_markup, table_style, res).pairs_day(ctx, {group: user_info.user_group, weekday: day});
             })
             .catch((err) => {
-                console.log(`Scene settings: ${err}`);
+                console.error(`Scene settings error: ${err}`);
                 ctx.scene.leave();
                 return ctx.scene.enter('group');
             })
@@ -29,17 +29,14 @@ const settings = (reverse_markup, table_style, res) => {
         (ctx) => {
             ctx.scene.next();
 
-            const keyboard_list = [];
-            for (let k of Object.keys(buttons)){
-                keyboard_list.push(Markup.button(buttons[k].text, buttons[k].color))
-            }
+            const keyboard = buttons.map(b=>(Markup.button(b.text, b.color)));
 
             ctx.reply('Выберите день недели:', null, Markup
-                .keyboard(keyboard_list, {columns: 2}).oneTime()
+                .keyboard(keyboard, {columns: 2}).oneTime()
             );
         },
         (ctx) => {
-            if (!ctx.message.payload) {
+            if (ctx.message.payload) {
                 const buttons_opt = JSON.parse(ctx.message.payload);
 
                 buttons.forEach(button=>{if (button.text === buttons_opt.button) button.action(ctx)});
