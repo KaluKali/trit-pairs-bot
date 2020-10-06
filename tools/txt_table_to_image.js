@@ -1,9 +1,9 @@
-// const gmSettings = {
-//     imageMagick: true,
-// };
+const gmSettings = {
+    imageMagick: true,
+};
 // if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\';
 // else gmSettings.appPath = '/usr/bin/';
-const gm = require('gm');
+const gm = require('gm').subClass(gmSettings);
 
 const txt_table_to_image = (text, theme, cb) => {
 
@@ -21,7 +21,7 @@ const txt_table_to_image = (text, theme, cb) => {
         };
     }
 
-    gm(2200, 1500, config_theme.background)
+    gm(2200, 1500, "#000000")
         .fill(config_theme.font_color)
         .fontSize('46')
         // .font(baskvill.ttf')
