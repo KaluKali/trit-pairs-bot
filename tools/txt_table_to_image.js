@@ -1,5 +1,5 @@
 const gmSettings = {
-    imageMagick: false,
+    imageMagick: true,
 };
 if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\';
 else gmSettings.appPath = '/usr/bin/';
