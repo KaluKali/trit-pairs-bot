@@ -5,7 +5,8 @@ const sendTextImage = (reverse_markup) => {
     return async (content, ctx, user_info)=>{
         textToImage(content, user_info ? user_info.theme : 0,(err,buffer)=>{
             if (err){
-                console.error(`Error in method send_image: ${err}`);
+                console.error(`Error in method send_image:`);
+                console.error(err);
                 return ctx.reply('Проблемы на сервере, скоро все исправим. Попробуйте еще раз.',null, reverse_markup)
             }
             saveImageVK(buffer, ctx.bot, (photo_data) => {
