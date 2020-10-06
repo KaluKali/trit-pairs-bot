@@ -21,17 +21,17 @@ const txt_table_to_image = (text, theme, cb) => {
         };
     }
 
-    gm(2200, 1500, "#000000")
-        .fill(config_theme.font_color)
+    gm(2200, 1500, '#000000')
+        .fill('#000000')
         .fontSize('46')
         // .font(baskvill.ttf')
-        .out('-background', config_theme.background)
+        .out('-background', '#000000')
         .out('-kerning','1')
         .out('-gravity', 'west')
         .out('-size', '2200x', `caption:${text}`)
         .out('-composite')
         .out('-trim')
-        .borderColor(config_theme.background)
+        .borderColor('#000000')
         .border(20,20)
         .toBuffer('JPEG', cb);
 };
