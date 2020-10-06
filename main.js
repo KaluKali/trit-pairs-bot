@@ -18,7 +18,7 @@ const levenshtein = require('./tools/levenshtein');
 const server_time = new ServerTime();
 const trit_data = new TritData();
 const sql_db = new SqlDb();
-const saveImageVK = require('./tools/saveImageVK');
+const saveImageVK = require('./tools/save_image_into_vk');
 const gmSettings = {
     imageMagick: true,
 };

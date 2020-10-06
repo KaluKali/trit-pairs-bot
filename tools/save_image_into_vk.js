@@ -1,5 +1,5 @@
 const request = require('request');
-const saveImageVK = async (buffer, bot, cb)=>{
+const save_image_into_vk = async (buffer, bot, cb)=>{
     bot.execute('photos.getMessagesUploadServer')
         .then(upload_data=>{
             const formData = {
@@ -29,4 +29,4 @@ const saveImageVK = async (buffer, bot, cb)=>{
         });
 };
 
-module.exports = saveImageVK;
+module.exports = save_image_into_vk;

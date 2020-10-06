@@ -7,7 +7,7 @@ PairTools.prototype.jsonToPairs = (data, group, weekday) => {
     let i_pair = 1;
     let data_day_s = [];
 
-    if (!data) {
+    if (!data[group]) {
         console.error(`Error data: ${data}`);
         return [
             ['Внутренняя','ошибка', ''],

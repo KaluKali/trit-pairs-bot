@@ -2,9 +2,10 @@ const gmSettings = {
     imageMagick: true,
 };
 if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\';
+else gmSettings.appPath = '/usr/bin';
 const gm = require('gm').subClass(gmSettings);
 
-const textToImage = (text, theme, cb) => {
+const txt_table_to_image = (text, theme, cb) => {
 
     let config_theme;
 
@@ -35,4 +36,4 @@ const textToImage = (text, theme, cb) => {
         .toBuffer('JPEG', cb);
 };
 
-module.exports = textToImage;
+module.exports = txt_table_to_image;
