@@ -15,3 +15,7 @@ npm start
 ## Installing
 
 npm install
+
+## On Linux?
+
+Please install ttf-liberation fonts or write in method '.font' in tools/txt_table_to_image

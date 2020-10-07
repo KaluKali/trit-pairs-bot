@@ -20,6 +20,7 @@ const txt_table_to_image = (text, theme, cb) => {
         };
     }
     gm(2200, 1500, config_theme.background)
+        .font('Liberation-Sans')
         .fill(config_theme.font_color)
         .in('-pointsize',46)
         .in('-background', config_theme.background)
