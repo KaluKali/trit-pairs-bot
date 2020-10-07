@@ -201,8 +201,7 @@ trit_data.on('changes', (data_changes)=>{
         .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 3)).join('')}</markup>`)
         .out('-orient','top-right').out('+append')
         .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 6 && index >= 3)).join('')}</markup>`)
-        .out('-orient','top-right')
-        .out('+append')
+        .out('-orient','top-right').out('+append')
         .borderColor('#FFFFFF')
         .border(20,20)
         .toBuffer('JPEG',async (err,buffer)=>{
