@@ -24,7 +24,6 @@ const gmSettings = {
 };
 if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\';
 const gm = require('gm').subClass(gmSettings);
-// const UsersDB = require('./tools/UsersDB');
 // resource
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание на сегодня', 'positive'),
@@ -118,7 +117,6 @@ bot.command('настройки', (ctx) => {
 bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text);
     ctx_methods(reverse_menu, null, { data: trit_data }).pairs_day(ctx,msg);
-    // ctx_methods(reverse_menu).mailing(server_time.getWeekday(), bot);
 });
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
@@ -142,25 +140,6 @@ trit_data.on('changes', (data_changes)=>{
             })
         }
     }
-    // console.log(pairDayWeek)
-    // let week_markups = [];
-    // const title_indent = 3;
-    //
-    // let weekdays = ServerTime.Weekdays();
-    // weekdays.shift();
-    //
-    // weekdays.forEach(weekday=>{
-    //     let pangoMarkup = `\n<span><b>${weekday[0].toUpperCase() + weekday.slice(1)}</b>\n\n`;
-    //     (new_changes.filter(pair=>pair.weekday===weekday)).forEach(dayChanges=>{
-    //         pangoMarkup += `\nГруппа ${dayChanges.group}\n\n`;
-    //         for (let pairIndex in dayChanges.changes){
-    //             let stock = `${dayChanges.changes[pairIndex].stock.name ? dayChanges.changes[pairIndex].stock.name : '—'} ${dayChanges.changes[pairIndex].stock.room ? `  каб. ${dayChanges.changes[pairIndex].stock.room}` : '  каб. —'}`;
-    //             let modify = `${dayChanges.changes[pairIndex].modified.name ? dayChanges.changes[pairIndex].modified.name : '—'} ${dayChanges.changes[pairIndex].modified.room ? `  каб. ${dayChanges.changes[pairIndex].modified.room}` : '  каб. —'}`;
-    //             pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>\n`
-    //         }
-    //     })
-    // });
-    // return;
 
     let week_markups = [];
     const title_indent = 3;
