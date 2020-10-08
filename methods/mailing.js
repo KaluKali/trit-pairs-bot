@@ -16,7 +16,7 @@ const mailing = (reverse_markup, table_style, res) => {
                     textToImage(`Расписание группы ${group} на\n${weekday}\n\n${t.toString()}`, 0,(err,buffer)=>{
                         if (err){
                             console.error(`Error in method mailing:`);
-                            console.error(err);
+                            return console.error(err);
                         }
                         saveImageVK(buffer, bot, (photo_data) => {
                             bot.sendMessage(users.map(user=>user.user_group === group ? user.vk_id : null), message, `photo${photo_data[0].owner_id}_${photo_data[0].id}`)
