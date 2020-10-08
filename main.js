@@ -36,7 +36,7 @@ const ctx_methods = require('./methods/index');
 const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
 // jobs
 schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
-    return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),bot);
+    return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
 });
 schedule.scheduleJob('0 0 */6 ? * *', ()=>{
     bot.stop();
@@ -118,6 +118,7 @@ bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text);
     ctx_methods(reverse_menu, null, { data: trit_data }).pairs_day(ctx,msg);
 });
+
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
         ctx.scene.enter('unknown_command',0)
