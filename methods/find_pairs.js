@@ -1,5 +1,5 @@
 const table = require('text-table');
-const levenshtein = require('../tools/levenshtein');
+const levenshtein = require('../tools/message_tools/levenshtein');
 
 const abbreviation = [
     "ТПЦМИ",

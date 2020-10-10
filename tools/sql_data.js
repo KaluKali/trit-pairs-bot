@@ -1,51 +1,43 @@
-const mysql = require('mysql2');
+const { Client } = require('pg');
 
 function SqlDB() {
-    this.connection = mysql.createConnection({
+    this.connection = new Client({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
         database: process.env.DB_NAME,
         password: process.env.DB_PASS,
+        port: 5432,
     });
-    this.connection.connect(function(err){
-        if (err) return Error("MAIN Ошибка подключения к MySQL: " + err.message);
-    });
+    this.connection.connect(err =>err ? console.error('DB connection error: ', err) : null);
 }
 
 SqlDB.prototype.getData = function(sql,values){
-    return new Promise(resolve =>{
-        this.connection.ping((err)=>{
-            if (err) {
-                this.reopen();
-                resolve(err);
-            }
-            this.connection.query(sql,values,(err,[data])=>resolve(data));
-        });
+    return new Promise((resolve,reject) =>{
+        this.connection.query(...[values ? [sql,values] : sql])
+            .then(data=>resolve(data.rows))
+            .catch(err=>reject(err));
     });
 };
-SqlDB.prototype.callback = function(sql,value,func){
-    this.connection.ping((err)=>{
-        if (err) this.reopen();
-        this.connection.query(sql,value,func);
-    });
+SqlDB.prototype.callback = function(sql,value,cb){
+    this.connection.query(sql,value)
+        .then(data=>cb(null, data.rows))
+        .catch(err=>cb(err));
 };
 SqlDB.prototype.execute = function(sql,value){
-    this.connection.ping((err)=>{
-        if (err) this.reopen();
-        this.connection.query(sql,value);
-    });
+    this.connection.query(sql,value);
 };
 SqlDB.prototype.reopen = function(){
-    this.connection.close();
-    this.connection = mysql.createConnection({
+    this.connection.end();
+    this.connection = new Client({
         host: process.env.DB_HOST,
         user: process.env.DB_USER,
         database: process.env.DB_NAME,
         password: process.env.DB_PASS,
+        port: 5432,
     });
     this.connection.connect(function(err){
-        if (err) return Error("Recon. Ошибка подключения " + err.message);
-        else console.log('Reconnection to mysql-db');
+        if (err) return Error(`Reconnect: Ошибка подключения: ${err.message}`);
+        else console.log('Reconnected to database.');
     });
 };
 

@@ -8,7 +8,6 @@ const trit_data = new TritData();
 const sql_db = new SqlDB();
 
 
-
 const group = function (reverse_markup) {
     return new Scene('group',
         (ctx) => {
@@ -35,11 +34,11 @@ const group = function (reverse_markup) {
                 );
             }
 
-            const user_info = await getUserInfo(ctx.message.from_id);
+            const [user_info] = await getUserInfo(ctx.message.from_id);
 
             let sql;
-            if (typeof user_info == 'undefined') {
-                sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
+            if (!user_info) {
+                sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES($1,$2,$3,$4,$5)`;
                 const values = [ctx.message.from_id, 1, 1, 1, ctx.session.stud_group];
                 sql_db.callback(sql, values, function (err) {
                     if (err) {

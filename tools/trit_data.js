@@ -1,4 +1,4 @@
-const api = require('./api');
+const api = require('./utils/api');
 const fs = require('fs');
 const EventEmitter = require('events');
 
@@ -35,6 +35,9 @@ class TritData extends EventEmitter{
     }
     static getGroupsPromise(){
         return api('https://trit.biz/rr/json.php');
+    }
+    static getTimeTablePromise(){
+        return api('https://trit.biz/rr/json_timetable.php');
     }
     getData(callback){
         this.getFSData('data.json',(data,err)=>{
@@ -85,22 +88,11 @@ class TritData extends EventEmitter{
                                             'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[i_inet],
                                             'stock': pair_inet
                                         };
-                                        // pairChanges.push({
-                                        //     group: one_group,
-                                        //     weekday: one_weekday,
-                                        //     num: i_inet+1,
-                                        //     changes: {
-                                        //         'stock': data_fs.data[one_group]['weekdays'][one_weekday].pairs[i_inet],
-                                        //         'modified': pair_inet
-                                        //     }
-                                        // });
                                     }
                                 });
                             }
                         }
-                        // if (pairChanges.length > 0) this.emit('changes', pairs_change, pairChanges);
                         if (pairs_change) this.emit('changes', pairs_change);
-
                     }).catch(err => console.error(`Check pairs change error:\n${err}`))
                 } else {
                     this.updFSData('data.json',TritData.getDataPromise())

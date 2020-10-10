@@ -14,7 +14,7 @@ const settings = (reverse_markup, table_style, res) => {
         text:day,
         color:'primary',
         action: ctx => getUserInfo(ctx.message.from_id,['user_group'])
-            .then(user_info=>{
+            .then(([user_info])=>{
                 ctx.scene.leave();
                 return ctx_methods(reverse_markup, table_style, res).pairs_day(ctx, {group: user_info.user_group, weekday: day});
             })

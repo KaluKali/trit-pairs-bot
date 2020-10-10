@@ -1,6 +1,6 @@
 const ServerTime = require('../tools/server_time');
 const getUserInfo = require('../tools/user_info');
-const pairTools = require('../tools/pair_tools').default;
+const pairTools = require('../tools/message_tools/pair_tools').default;
 // experiment tools
 const table = require('text-table');
 const sendTextImage = require('./send_image');
@@ -11,7 +11,8 @@ const pairs_now_day_new = (reverse_markup, table_style, res) => {
     return async (ctx, message) => { //send pairs to people
         if (!ctx || !message) return new Error('pairs_Day: Argument error');
 
-        const user_info = await getUserInfo(ctx.message.from_id);
+        const [user_info] = await getUserInfo(ctx.message.from_id);
+
         if (message.group === -1){
             if (!user_info){
                 return ctx.scene.enter('group');

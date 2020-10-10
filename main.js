@@ -12,13 +12,13 @@ const schedule = require('node-schedule');
 const TritData = require('./tools/trit_data');
 const ServerTime = require('./tools/server_time');
 const SqlDb = require('./tools/sql_data');
-const Message = require('./tools/message');
-const levenshtein = require('./tools/levenshtein');
+const Message = require('./tools/message_tools/message');
+const levenshtein = require('./tools/message_tools/levenshtein');
 // tools
 const server_time = new ServerTime();
 const trit_data = new TritData();
 const sql_db = new SqlDb();
-const saveImageVK = require('./tools/save_image_into_vk');
+const saveImageVK = require('./tools/image_tools/save_image_into_vk');
 const gmSettings = {
     imageMagick: true,
 };

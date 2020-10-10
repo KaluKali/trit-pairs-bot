@@ -1,4 +1,4 @@
-const TritData = require('./trit_data');
+const TritData = require('../trit_data');
 const trit_data = new TritData();
 
 const PairTools = function() {};
@@ -8,7 +8,8 @@ PairTools.prototype.jsonToPairs = (data, group, weekday) => {
     let data_day_s = [];
 
     if (!data[group]) {
-        console.error(`Error data: ${data}`);
+        console.error(`Error data:`);
+        console.error(data);
         return [
             ['Внутренняя','ошибка', ''],
             ['Повторите','запрос','позже']

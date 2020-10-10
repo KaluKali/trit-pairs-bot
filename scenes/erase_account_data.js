@@ -36,7 +36,7 @@ const erase_account_data = function (reverse_markup) {
         },
         (ctx) => {
             let buttons_opt;
-            if (typeof ctx.message.payload !== 'undefined') buttons_opt = JSON.parse(ctx.message.payload);
+            if (ctx.message.payload) buttons_opt = JSON.parse(ctx.message.payload);
             else buttons.exit.action(ctx);
 
             for (let k of Object.keys(buttons)){
@@ -45,13 +45,13 @@ const erase_account_data = function (reverse_markup) {
         },
         (ctx) => {
             let buttons_opt;
-            if (typeof ctx.message.payload !== 'undefined') buttons_opt = JSON.parse(ctx.message.payload);
+            if (ctx.message.payload) buttons_opt = JSON.parse(ctx.message.payload);
             else buttons.exit.action(ctx);
 
             if (buttons_opt.button==='Нет') buttons.exit.action(ctx);
             else {
-                const sql = `DELETE FROM ${process.env.DB_TABLE} WHERE vk_id LIKE '%${ctx.message.from_id}%'`;
-                sql_db.callback(sql, [], function (err) {
+                const sql = `DELETE FROM ${process.env.DB_TABLE} WHERE vk_id = ${ctx.message.from_id}`;
+                sql_db.callback(sql, [], (err) => {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
                         return console.error(err);

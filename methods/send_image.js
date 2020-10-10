@@ -1,5 +1,5 @@
-const textToImage = require('../tools/txt_table_to_image');
-const saveImageVK = require('../tools/save_image_into_vk');
+const textToImage = require('../tools/image_tools/txt_table_to_image');
+const saveImageVK = require('../tools/image_tools/save_image_into_vk');
 
 const sendTextImage = (reverse_markup) => {
     return async (content, ctx, user_info)=>{

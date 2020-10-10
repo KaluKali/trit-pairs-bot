@@ -16,7 +16,7 @@ const notify_e_d = function (reverse_markup) {
             );
         },
         (ctx) => {
-            if (typeof ctx.message.payload !== 'undefined') {
+            if (ctx.message.payload) {
                 JSON.parse(ctx.message.payload).button === 'Да' ? ctx.session.notify_e_d = true : ctx.session.notify_e_d = false;
             } else {
                 ctx.session.notify_e_d = ctx.message.text.indexOf('да') !== -1 || ctx.message.text.indexOf('Да') !== -1;
