@@ -4,19 +4,6 @@ const EventEmitter = require('events');
 
 const now_date = new Date();
 
-const pairs_time = [
-    '08:00 - 08:45',
-    '08:50 - 09:35',
-    '09:45 - 10:30',
-    '10:35 - 11:20',
-    '11:40 - 12:25',
-    '12:45 - 13:30',
-    '13:40 - 14:25',
-    '14:30 - 15:15',
-    '15:25 - 16:10',
-    '16:15 - 17:00',
-];
-
 function isLargeDigit(i){
     return i.toString().length > 1
 }
@@ -93,18 +80,16 @@ class TritData extends EventEmitter{
     updFSData(name, promise, callback){
         promise.then(response=>{
             try {
-                fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data:
-                        response.filter((elem)=>elem.includes('lesson'))
-                            .map(elem=>
-                                `${isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`)
-                }),'utf-8');
+                const timetable = response.filter((elem)=>elem.includes('lesson'))
+                    .map(elem=>
+                        `${isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
+                fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
+
+                if (callback) callback(timetable)
             } catch (e) {
                 console.warn(e);
             } finally {
                 console.info(`${name} updated.`);
-                if (callback){
-                    callback(response);
-                }
             }
         }).catch(err => {
             this.getFSData(name,(fs_data, err_fs)=>{
