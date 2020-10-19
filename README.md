@@ -18,4 +18,4 @@ npm install
 
 ## On Linux?
 
-Please install ttf-liberation fonts or write in method '.font' in tools/txt_table_to_image
+Please install ttf-liberation fonts or install your font and write font name into method '.font' in tools/txt_table_to_image
