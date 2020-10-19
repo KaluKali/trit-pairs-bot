@@ -9,9 +9,11 @@ const mailing = (reverse_markup, table_style, res) => {
         res.db.callback(sql, null,(err, users) => {
             if(err) return  console.error(`mailing Error: ${err}`);
             const uniq_exec_groups = [...new Set(users.map(user=>(user.user_group)))];
-            res.data.getData(async (data) => {
-                uniq_exec_groups.forEach((group) => {
-                    const t = table(pairTools.jsonToPairs(data, group, weekday), table_style);
+            res.data.getData((data) => {
+                uniq_exec_groups.forEach(async (group) => {
+                    const arr_pairs = await new Promise(resolve => pairTools.jsonToPairs(data, group, weekday, resolve));
+
+                    const t = table(arr_pairs, table_style);
 
                     textToImage(`Расписание группы ${group} на\n${weekday}\n\n${t.toString()}`, 0,(err,buffer)=>{
                         if (err){

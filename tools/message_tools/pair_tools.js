@@ -3,7 +3,7 @@ const trit_data = new TritData();
 
 const PairTools = function() {};
 
-PairTools.prototype.jsonToPairs = (data, group, weekday) => {
+PairTools.prototype.jsonToPairs = function (data, group, weekday, cb) {
     let i_pair = 1;
     let data_day_s = [];
 
@@ -15,19 +15,22 @@ PairTools.prototype.jsonToPairs = (data, group, weekday) => {
             ['Повторите','запрос','позже']
         ]
     }
-    // постоянно прилетает неправильная data
-    data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
-        if (i < 5){ // Pair limit
-            if (pair.room === false) pair.room = '—';
-            if (pair.name === false) pair.name = '—';
-            data_day_s.push(
-                [trit_data.PairsTime()[i_pair-1], pair.room.trim(), pair.name.trim().toLowerCase()],
-                [trit_data.PairsTime()[i_pair], pair.room.trim(), pair.name.trim().toLowerCase()]
-            );
-            i_pair+=2;
+    trit_data.getTimeTable((timetable, err)=>{
+        if (!err) {
+            data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
+                if (i < 5){ // Pair limit
+                    if (pair.room === false) pair.room = '—';
+                    if (pair.name === false) pair.name = '—';
+                    data_day_s.push(
+                        [timetable[i_pair-1], pair.room.trim(), pair.name.trim().toLowerCase()],
+                        [timetable[i_pair], pair.room.trim(), pair.name.trim().toLowerCase()]
+                    );
+                    i_pair+=2;
+                }
+            });
+            cb(data_day_s)
         }
     });
-    return data_day_s;
 };
 
 module.exports.default = new PairTools();

@@ -118,7 +118,6 @@ bot.command('расписание', async (ctx)=>{
     ctx_methods(reverse_menu, null, { data: trit_data }).pairs_day(ctx,msg);
 });
 
-
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
         ctx.scene.enter('unknown_command',0)

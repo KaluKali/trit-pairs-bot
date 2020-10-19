@@ -17,6 +17,10 @@ const pairs_time = [
     '16:15 - 17:00',
 ];
 
+function isLargeDigit(i){
+    return i.toString().length > 1
+}
+
 class TritData extends EventEmitter{
     static getDataPromise(){
         return api('https://trit.biz/rr/json2.php');
@@ -55,6 +59,64 @@ class TritData extends EventEmitter{
             }
         });
     }
+    getTimeTable(callback) {
+        this.getFSData('timetable.json',(data,err)=>{
+            if (!err){
+                const back_date = new Date(data.date);
+                if (back_date.getDate() === now_date.getDate()){
+                    callback(data.data);
+                } else {
+                    this.updFSData('timetable.json',TritData.getTimeTablePromise(),callback);
+                }
+            } else {
+                this.updFSData('timetable.json',TritData.getTimeTablePromise(),callback)
+            }
+        });
+    }
+    getFSData(name, callback){
+        fs.access(name, fs.constants.F_OK, (err) => {
+            if (!err){
+                fs.readFile(name, 'utf-8', (err,data)=>{
+                    if (!err){
+                        callback(JSON.parse(data));
+                    } else {
+                        console.error(`getFSData: ${err}`);
+                        callback(undefined,err)
+                    }
+                });
+            } else {
+                console.warn(`${name} отсутствует или занят.\n${err}`);
+                callback(undefined,err);
+            }
+        });
+    }
+    updFSData(name, promise, callback){
+        promise.then(response=>{
+            try {
+                fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data:
+                        response.filter((elem)=>elem.includes('lesson'))
+                            .map(elem=>
+                                `${isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`)
+                }),'utf-8');
+            } catch (e) {
+                console.warn(e);
+            } finally {
+                console.info(`${name} updated.`);
+                if (callback){
+                    callback(response);
+                }
+            }
+        }).catch(err => {
+            this.getFSData(name,(fs_data, err_fs)=>{
+                if (!err_fs){
+                    callback(fs_data.data,err);
+                } else {
+                    callback(undefined, err_fs);
+                    console.error(err_fs);
+                }
+            })
+        });
+    }
     CheckChange(){
         TritData.getDataPromise().then(data_inet=>{
             // let pairChanges = [];
@@ -88,49 +150,6 @@ class TritData extends EventEmitter{
 
             });
         }).catch(err => console.error(`Check pairs change error:\n${err}`));
-    }
-    PairsTime(){
-        return pairs_time;
-    }
-    getFSData(name, callback){
-        fs.access(name, fs.constants.F_OK, (err) => {
-            if (!err){
-                fs.readFile(name, 'utf-8', (err,data)=>{
-                    if (!err){
-                        callback(JSON.parse(data));
-                    } else {
-                        console.error(`getFSData: ${err}`);
-                        callback(undefined,err)
-                    }
-                });
-            } else {
-                console.warn(`${name} отсутствует или занят.\n${err}`);
-                callback(undefined,err);
-            }
-        });
-    }
-    updFSData(name, promise, callback){
-        promise.then(response=>{
-            try {
-                fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data:response}),'utf-8');
-            } catch (e) {
-                console.warn(e);
-            } finally {
-                console.info(`${name} updated.`);
-                if (callback){
-                    callback(response);
-                }
-            }
-        }).catch(err => {
-            this.getFSData(name,(fs_data, err_fs)=>{
-                if (!err_fs){
-                    callback(fs_data.data,err);
-                } else {
-                    callback(undefined, err_fs);
-                    console.error(err_fs);
-                }
-            })
-        });
     }
 }
 
