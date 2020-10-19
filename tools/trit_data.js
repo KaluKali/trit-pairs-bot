@@ -80,12 +80,16 @@ class TritData extends EventEmitter{
     updFSData(name, promise, callback){
         promise.then(response=>{
             try {
-                const timetable = response.filter((elem)=>elem.includes('lesson'))
-                    .map(elem=>
-                        `${isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
-                fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
-
-                if (callback) callback(timetable)
+                if (name === 'timetable.json') {
+                    const timetable = response.filter((elem)=>elem.includes('lesson'))
+                        .map(elem=>
+                            `${isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
+                    fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
+                    if (callback) callback(timetable)
+                } else {
+                    fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: response}),'utf-8');
+                    if (callback) callback(response);
+                }
             } catch (e) {
                 console.warn(e);
             } finally {
