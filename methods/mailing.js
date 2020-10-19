@@ -6,7 +6,7 @@ const saveImageVK = require('../tools/image_tools/save_image_into_vk');
 const mailing = (reverse_markup, table_style, res) => {
     return async (weekday, message, bot)=>{
         const sql = `SELECT vk_id, user_group, theme FROM ${process.env.DB_TABLE} WHERE notify AND notify_e_d`;
-        res.db.callback(sql, (err, users) => {
+        res.db.callback(sql, null,(err, users) => {
             if(err) return  console.error(`mailing Error: ${err}`);
             const uniq_exec_groups = [...new Set(users.map(user=>(user.user_group)))];
             res.data.getData(async (data) => {
@@ -19,7 +19,8 @@ const mailing = (reverse_markup, table_style, res) => {
                             return console.error(err);
                         }
                         saveImageVK(buffer, bot, (photo_data) => {
-                            bot.sendMessage(users.map(user=>user.user_group === group ? user.vk_id : null), message, `photo${photo_data[0].owner_id}_${photo_data[0].id}`)
+                            bot.sendMessage(users.map(user=>user.user_group === group ? user.vk_id : null), message,
+                                `photo${photo_data[0].owner_id}_${photo_data[0].id}`, reverse_markup)
                         })
                     });
                 });

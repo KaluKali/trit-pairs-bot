@@ -8,7 +8,11 @@ function SqlDB() {
         password: process.env.DB_PASS,
         port: 5432,
     });
-    this.connection.connect(err =>err ? console.error('DB connection error: ', err) : null);
+    this.connection.connect()
+        .catch(err=>{
+            console.error('DB connection error: ', err);
+            process.exit(1);
+        })
 }
 
 SqlDB.prototype.getData = function(sql,values){
@@ -18,15 +22,15 @@ SqlDB.prototype.getData = function(sql,values){
             .catch(err=>reject(err));
     });
 };
-SqlDB.prototype.callback = function(sql,value,cb){
-    this.connection.query(sql,value)
+SqlDB.prototype.callback = function(sql, values, cb){
+    this.connection.query(sql,values)
         .then(data=>cb(null, data.rows))
-        .catch(err=>cb(err));
+        .catch(()=>this.reopen(sql,values,cb));
 };
-SqlDB.prototype.execute = function(sql,value){
-    this.connection.query(sql,value);
+SqlDB.prototype.execute = function(sql, values){
+    this.connection.query(sql,values);
 };
-SqlDB.prototype.reopen = function(){
+SqlDB.prototype.reopen = function(sql,values,cb){
     this.connection.end();
     this.connection = new Client({
         host: process.env.DB_HOST,
@@ -35,10 +39,15 @@ SqlDB.prototype.reopen = function(){
         password: process.env.DB_PASS,
         port: 5432,
     });
-    this.connection.connect(function(err){
-        if (err) return Error(`Reconnect: Ошибка подключения: ${err.message}`);
-        else console.log('Reconnected to database.');
-    });
+    this.connection.connect()
+        .then(()=>console.log('Reconnected to database.'))
+        .catch(err=>{
+            console.error('DB reconnection error: ');
+            console.error(err);
+            process.exit(1);
+        });
+    this.connection.query(sql,values,(err,res)=>cb(err,res.rows));
+
 };
 
 module.exports = SqlDB;

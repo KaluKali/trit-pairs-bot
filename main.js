@@ -98,7 +98,6 @@ bot.use((ctx, next)=>{
 
 bot.command('поиск пары', (ctx)=>{
     ctx.reply('Напиши мне \"найди {пара}\"');
-    ctx.reply('')
 });
 bot.command('неделя', (ctx)=>{
     ctx.scene.enter('week');
@@ -118,6 +117,7 @@ bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text);
     ctx_methods(reverse_menu, null, { data: trit_data }).pairs_day(ctx,msg);
 });
+
 
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
@@ -208,7 +208,7 @@ trit_data.on('changes', (data_changes)=>{
                 });
             }
         });
-    // todo save Conversations-id into db
+    // todo save Conversation-ids into db API 5.124 в ответе на вызов messages.send с параметром peer_ids возвращается conversation_message_id.
 });
 bot.startPolling((err) => {
     if (!err) console.log('Bot started');
