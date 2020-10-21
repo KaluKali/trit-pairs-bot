@@ -1,7 +1,7 @@
 .idea/
 # github.com/github/gitignore/blob/master/Node.gitignore
 data.json
-group.json
+groupы.json
 timetable.json
 pm2-start.cmd
 pm2-stop.cmd

@@ -4,11 +4,20 @@ const EventEmitter = require('events');
 
 const now_date = new Date();
 
+const TIMETABLE_FILE = 'timetable.json';
+const DATA_FILE = 'data.json';
+const GROUPS_FILE = 'groups.json';
+
 function isLargeDigit(i){
     return i.toString().length > 1
 }
 
 class TritData extends EventEmitter{
+    constructor() {
+        super();
+        console.log('Exemplar TritData created.')
+    }
+
     static getDataPromise(){
         return api('https://trit.biz/rr/json2.php');
     }
@@ -19,44 +28,44 @@ class TritData extends EventEmitter{
         return api('https://trit.biz/rr/json_timetable.php');
     }
     getData(callback){
-        this.getFSData('data.json',(data,err)=>{
+        this.getFSData(DATA_FILE,(data,err)=>{
             if (!err){
                 const back_date = new Date(data.date);
                 if (back_date.getDate() === now_date.getDate()){
                     callback(data.data);
                 } else {
-                    this.updFSData('data.json',TritData.getDataPromise(),callback)
+                    this.updFSData(DATA_FILE,TritData.getDataPromise(),callback)
                 }
             } else {
-                this.updFSData('data.json',TritData.getDataPromise(),callback);
+                this.updFSData(DATA_FILE,TritData.getDataPromise(),callback);
             }
         });
     }
     getGroups(callback){
-        this.getFSData('group.json',(data,err)=>{
+        this.getFSData(GROUPS_FILE,(data,err)=>{
             if (!err){
                 const back_date = new Date(data.date);
                 if (back_date.getDate() === now_date.getDate()){
                     callback(data.data);
                 } else {
-                    this.updFSData('group.json',TritData.getGroupsPromise(),callback);
+                    this.updFSData(GROUPS_FILE,TritData.getGroupsPromise(),callback);
                 }
             } else {
-                this.updFSData('group.json',TritData.getGroupsPromise(),callback)
+                this.updFSData(GROUPS_FILE,TritData.getGroupsPromise(),callback)
             }
         });
     }
     getTimeTable(callback) {
-        this.getFSData('timetable.json',(data,err)=>{
+        this.getFSData(TIMETABLE_FILE,(data,err)=>{
             if (!err){
                 const back_date = new Date(data.date);
                 if (back_date.getDate() === now_date.getDate()){
                     callback(data.data);
                 } else {
-                    this.updFSData('timetable.json',TritData.getTimeTablePromise(),callback);
+                    this.updFSData(TIMETABLE_FILE,TritData.getTimeTablePromise(),callback);
                 }
             } else {
-                this.updFSData('timetable.json',TritData.getTimeTablePromise(),callback)
+                this.updFSData(TIMETABLE_FILE,TritData.getTimeTablePromise(),callback)
             }
         });
     }
@@ -79,28 +88,25 @@ class TritData extends EventEmitter{
     }
     updFSData(name, promise, callback){
         promise.then(response=>{
-            try {
-                if (name === 'timetable.json') {
+            switch (name) {
+                case TIMETABLE_FILE:
                     const timetable = response.filter((elem)=>elem.includes('lesson'))
                         .map(elem=>
                             `${isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
                     fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
-                    if (callback) callback(timetable)
-                } else {
+                    if (callback) callback(timetable);
+                    break;
+                default:
                     fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: response}),'utf-8');
                     if (callback) callback(response);
-                }
-            } catch (e) {
-                console.warn(e);
-            } finally {
-                console.info(`${name} updated.`);
+                    break;
             }
         }).catch(err => {
             this.getFSData(name,(fs_data, err_fs)=>{
                 if (!err_fs){
                     callback(fs_data.data,err);
                 } else {
-                    callback(undefined, err_fs);
+                    callback(null, err_fs);
                     console.error(err_fs);
                 }
             })
@@ -110,7 +116,7 @@ class TritData extends EventEmitter{
         TritData.getDataPromise().then(data_inet=>{
             // let pairChanges = [];
             let pairs_change;
-            this.getFSData('data.json',(data_fs,err)=>{
+            this.getFSData(DATA_FILE,(data_fs,err)=>{
                 if (!err){
                     TritData.getGroupsPromise().then(response=>{
                         for (let one_group of response){
@@ -134,9 +140,8 @@ class TritData extends EventEmitter{
                         if (pairs_change) this.emit('changes', pairs_change);
                     }).catch(err => console.error(`Check pairs change error:\n${err}`))
                 } else {
-                    this.updFSData('data.json',TritData.getDataPromise())
+                    this.updFSData(DATA_FILE,TritData.getDataPromise())
                 }
-
             });
         }).catch(err => console.error(`Check pairs change error:\n${err}`));
     }
