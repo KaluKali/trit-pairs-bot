@@ -1,7 +1,7 @@
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 
-const settings = (reverse_markup) => {
+const settings = (reverse_markup, table_style, resources) => {
     const buttons = [
         {text: 'Уведомления', color:'primary', action: function (ctx) {
                 ctx.scene.leave();
@@ -27,8 +27,15 @@ const settings = (reverse_markup) => {
 
 
     return new Scene('settings',
-        (ctx) => {
+        async (ctx) => {
             ctx.scene.next();
+
+            const [user_info] = await resources.db.userInfo(ctx.message.from_id, ['vk_id']);
+
+            if (!user_info){
+                ctx.scene.leave();
+                return ctx.scene.enter('group');
+            }
 
             ctx.reply('Что вы хотите настроить?', null, Markup
                 .keyboard(buttons.map(button=>(Markup.button(button.text, button.color))),

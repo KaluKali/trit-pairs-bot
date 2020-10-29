@@ -10,8 +10,8 @@ function scenes(reverse_markup, table_style, resources) {
     let args = Object.keys(scenes.arguments).map(key=>(scenes.arguments[key]));
     return [
         require('./group')(...args),
-        require('./notification/notify_c')(...args),
-        require('./notification/notify_e_d')(...args),
+        require('./notification/notify_changes')(...args),
+        require('./notification/notify_every_day')(...args),
         require('./tune_bot')(...args),
         require('./settings')(...args),
         require('./notification/choice_notify')(...args),

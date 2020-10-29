@@ -31,7 +31,10 @@ SqlDB.prototype.userInfo = function(vk_id, fields=[]) {
 SqlDB.prototype.callback = function(sql, values, cb){
     this.connection.query(sql,values)
         .then(data=>cb(null, data.rows))
-        .catch(()=>this.reopen(sql,values,cb));
+        .catch((error)=>{
+            console.log(error)
+            this.reopen(sql,values,cb)
+        });
 };
 SqlDB.prototype.execute = function(sql, values){
     this.connection.query(sql,values);

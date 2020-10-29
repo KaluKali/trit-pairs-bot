@@ -47,6 +47,7 @@ class TritData extends EventEmitter{
         else this._checkUpdateFile(TIMETABLE_FILE, callback);
     }
     _checkUpdateFile(file, callback) {
+        //todo убрать партянку из свичей
         this.getFSData(file,(data,err)=>{
             if (!err){
                 const back_date = new Date(data.date);
@@ -62,10 +63,24 @@ class TritData extends EventEmitter{
                             return this.timetable = data.data
                     }
                 } else {
-                    this.updateFSData(DATA_FILE,TritData.getDataPromise(),callback)
+                    switch (file) {
+                        case DATA_FILE:
+                            return this.updateFSData(file,TritData.getDataPromise(),callback);
+                        case GROUPS_FILE:
+                            return this.updateFSData(file,TritData.getGroupsPromise(),callback);
+                        case TIMETABLE_FILE:
+                            return this.updateFSData(file,TritData.getTimeTablePromise(),callback);
+                    }
                 }
             } else {
-                this.updateFSData(file,TritData.getDataPromise(),callback);
+                switch (file) {
+                    case DATA_FILE:
+                        return this.updateFSData(file,TritData.getDataPromise(),callback);
+                    case GROUPS_FILE:
+                        return this.updateFSData(file,TritData.getGroupsPromise(),callback);
+                    case TIMETABLE_FILE:
+                        return this.updateFSData(file,TritData.getTimeTablePromise(),callback);
+                }
             }
         });
     }

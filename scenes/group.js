@@ -7,8 +7,8 @@ const group = function (reverse_markup, table_style, resources) {
         (ctx) => {
             ctx.scene.next();
             resources.data.getGroups((groups)=>{
-                ctx.reply('Номер вашей группы?', null, Markup
-                    .keyboard(groups, {columns: 3}).oneTime()
+                ctx.reply('Номер вашей группы?', null,
+                    Markup.keyboard(groups, {columns: 3}).oneTime()
                 );
             });
         },
@@ -43,7 +43,7 @@ const group = function (reverse_markup, table_style, resources) {
                 });
             } else {
                 sql = `UPDATE ${process.env.DB_TABLE} SET user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
-                resources.db.callback(sql, [], function (err) {
+                resources.db.callback(sql, [], (err) => {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
                         return console.error(err);
