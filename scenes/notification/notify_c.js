@@ -1,10 +1,8 @@
-const SqlDB = require('../../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 
-const sql_db = new SqlDB();
 
-const notify_c = function (reverse_markup) {
+const notify_c = function (reverse_markup, table_style, resources) {
     return new Scene('notify_c',
         (ctx) => {
             ctx.scene.next();
@@ -23,7 +21,7 @@ const notify_c = function (reverse_markup) {
             }
 
             const sql = `UPDATE ${process.env.DB_TABLE} SET notify_c = ${ctx.session.notify_c} WHERE vk_id = ${ctx.message.from_id}`;
-            sql_db.callback(sql, [], function (err) {
+            resources.db.callback(sql, [], function (err) {
                 if (err) {
                     ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
                     return console.error(err);

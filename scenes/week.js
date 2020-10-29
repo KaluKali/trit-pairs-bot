@@ -1,11 +1,10 @@
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 const ServerTime = require('../tools/server_time');
-const getUserInfo = require('../tools/user_info');
 const ctx_methods = require('../methods/index');
 
 
-const settings = (reverse_markup, table_style, res) => {
+const settings = (reverse_markup, table_style, resources) => {
 
     let weekdays = ServerTime.Weekdays();
     weekdays.shift();
@@ -13,10 +12,10 @@ const settings = (reverse_markup, table_style, res) => {
     const buttons = weekdays.map(day=>({
         text:day,
         color:'primary',
-        action: ctx => getUserInfo(ctx.message.from_id,['user_group'])
+        action: ctx => resources.db.userInfo(ctx.message.from_id,['user_group'])
             .then(([user_info])=>{
                 ctx.scene.leave();
-                return ctx_methods(reverse_markup, table_style, res).pairs_day(ctx, {group: user_info.user_group, weekday: day});
+                return ctx_methods(reverse_markup, table_style, resources).pairs_day(ctx, {group: user_info.user_group, weekday: day});
             })
             .catch((err) => {
                 console.error(`Scene settings error: ${err}`);

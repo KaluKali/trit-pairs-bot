@@ -1,7 +1,8 @@
 const TritData = require('../trit_data');
-const trit_data = new TritData();
 
-const PairTools = function() {};
+const PairTools = function(trit_data) {
+    this.trit_data = trit_data;
+};
 
 PairTools.prototype.jsonToPairs = function (data, group, weekday, cb) {
     let i_pair = 1;
@@ -15,7 +16,7 @@ PairTools.prototype.jsonToPairs = function (data, group, weekday, cb) {
             ['Повторите','запрос','позже']
         ]
     }
-    trit_data.getTimeTable((timetable, err)=>{
+    this.trit_data.getTimeTable((timetable, err)=>{
         if (!err) {
             data[group]['weekdays'][weekday]['pairs'].forEach((pair,i) => {
                 if (i < 5){ // Pair limit
@@ -33,4 +34,4 @@ PairTools.prototype.jsonToPairs = function (data, group, weekday, cb) {
     });
 };
 
-module.exports.default = new PairTools();
+module.exports = PairTools;

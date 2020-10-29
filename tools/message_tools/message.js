@@ -1,20 +1,19 @@
-const TritData = require('../trit_data');
 const ServerTime = require('../server_time');
 const levenshtein = require('./levenshtein');
 
 const server_time = new ServerTime();
-const trit_data = new TritData();
 
 function Message() {
 }
 
-Message.prototype.parseFind = async function (args) {
+Message.prototype.parseFind = async function (args, res) {
     const params = {pair:'',group:-1,weekday:''};
-    const valid_groups = await new Promise(resolve => trit_data.getGroups(resolve));
+    const valid_groups = await new Promise(resolve => res.data.getGroups(resolve));
 
     args.forEach((param) => {
         if (param === 'на') return;
         if (param.indexOf('групп') !== -1) return;
+        else if (param.indexOf('завтр') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
         if (param.indexOf('сегодн') !== -1) return params.weekday = server_time.getWeekday();
         if (isNaN(+param)) {
             if (ServerTime.isWeekday(param)) {
@@ -35,13 +34,13 @@ Message.prototype.parseFind = async function (args) {
 
     return params;
 };
-Message.prototype.parsePairsDay = async function (args) {
+Message.prototype.parsePairsDay = async function (args, res) {
     const params = {group: -1, weekday: ""};
     //struct: расписание {1,2} {2,3}
     // 1 группа
     // 2
     // 3 день недели
-    let valid_groups = await new Promise(resolve => trit_data.getGroups(resolve));
+    let valid_groups = await new Promise(resolve => res.data.getGroups(resolve));
     args.forEach((param) => {
         if (param === 'на') return;
         else if (param.indexOf('завтр') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
@@ -69,7 +68,10 @@ Message.prototype.parseCabinet = function(args) {
     // 2 день недели
 
     args.forEach((param) => {
-        if (ServerTime.isWeekday(param)) {
+        if (param === 'на') return;
+        else if (param.indexOf('завтр') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay() + 1);
+        else if (param.indexOf('сегодн') !== -1) return params.weekday = ServerTime.getWeekday(server_time.getDay());
+        else if (ServerTime.isWeekday(param)) {
             return params.weekday = param;
         } else {
             for (const day of ServerTime.Weekdays()) {
@@ -83,14 +85,14 @@ Message.prototype.parseCabinet = function(args) {
 
 for (let funcname in Message.prototype){
     function argsDecorator(func){
-        return function (text) {
+        return function (text, res) {
             let args = text.toLowerCase()
                 .replace(/ {1,}/g,' ')
                 .split(' ');
             // regxp: remove duplicate spaces
             // for remove first functional word
             args.shift();
-            return func.call(this, args)
+            return func.call(this, args, res)
         }
     }
     Message.prototype[funcname] = argsDecorator(Message.prototype[funcname])

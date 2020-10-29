@@ -1,5 +1,5 @@
 const table = require('text-table');
-const pairTools = require('../tools/message_tools/pair_tools').default;
+const pairTools = require('../tools/message_tools/pair_tools');
 const textToImage = require('../tools/image_tools/txt_table_to_image');
 const saveImageVK = require('../tools/image_tools/save_image_into_vk');
 
@@ -11,7 +11,7 @@ const mailing = (reverse_markup, table_style, res) => {
             const uniq_exec_groups = [...new Set(users.map(user=>(user.user_group)))];
             res.data.getData((data) => {
                 uniq_exec_groups.forEach(async (group) => {
-                    const arr_pairs = await new Promise(resolve => pairTools.jsonToPairs(data, group, weekday, resolve));
+                    const arr_pairs = await new Promise(resolve => new pairTools(res.data).jsonToPairs(data, group, weekday, resolve));
 
                     const t = table(arr_pairs, table_style);
 

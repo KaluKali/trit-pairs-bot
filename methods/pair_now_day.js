@@ -1,17 +1,16 @@
 const ServerTime = require('../tools/server_time');
-const getUserInfo = require('../tools/user_info');
-const pairTools = require('../tools/message_tools/pair_tools').default;
+const pairTools = require('../tools/message_tools/pair_tools');
 // experiment tools
 const table = require('text-table');
-const sendTextImage = require('./send_image');
+const sendTextImage = require('./representation/send_image');
 //
 const server_time = new ServerTime();
 
-const pairs_now_day_new = (reverse_markup, table_style, res) => {
+const pairs_now_day = (reverse_markup, table_style, resources) => {
     return async (ctx, message) => { //send pairs to people
         if (!ctx || !message) return new Error('pairs_Day: Argument error');
 
-        const [user_info] = await getUserInfo(ctx.message.from_id);
+        const [user_info] = await resources.db.userInfo(ctx.message.from_id);
 
         if (message.group === -1){
             if (!user_info){
@@ -23,8 +22,8 @@ const pairs_now_day_new = (reverse_markup, table_style, res) => {
         const weekday = message.weekday !== "" ? message.weekday : server_time.getWeekday();
         const group = message.group;
 
-        res.data.getData(async (data, err) => {
-            const arr_pairs = await new Promise(resolve => pairTools.jsonToPairs(data, group, weekday, resolve));
+        resources.data.getData(async (data, err) => {
+            const arr_pairs = await new Promise(resolve => new pairTools(resources.data).jsonToPairs(data, group, weekday, resolve));
             if (!err){
                 let content = `Расписание группы ${group} на \n${weekday}\n\n${table(arr_pairs, table_style).toString()}`;
                 sendTextImage(reverse_markup)(content, ctx, user_info)
@@ -40,4 +39,4 @@ const pairs_now_day_new = (reverse_markup, table_style, res) => {
     }
 };
 
-module.exports = pairs_now_day_new;
+module.exports = pairs_now_day;

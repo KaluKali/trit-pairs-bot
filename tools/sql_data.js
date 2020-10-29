@@ -9,6 +9,7 @@ function SqlDB() {
         port: 5432,
     });
     this.connection.connect()
+        .then(()=>console.log('DB connection successful'))
         .catch(err=>{
             console.error('DB connection error: ', err);
             process.exit(1);
@@ -22,6 +23,11 @@ SqlDB.prototype.getData = function(sql,values){
             .catch(err=>reject(err));
     });
 };
+
+SqlDB.prototype.userInfo = function(vk_id, fields=[]) {
+    return this.getData(`SELECT ${fields.length ? fields.join() : '*'} FROM ${process.env.DB_TABLE} WHERE vk_id = ${vk_id} LIMIT 1`);
+};
+
 SqlDB.prototype.callback = function(sql, values, cb){
     this.connection.query(sql,values)
         .then(data=>cb(null, data.rows))

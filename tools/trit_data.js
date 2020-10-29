@@ -8,13 +8,20 @@ const TIMETABLE_FILE = 'timetable.json';
 const DATA_FILE = 'data.json';
 const GROUPS_FILE = 'groups.json';
 
-function isLargeDigit(i){
+function _isLargeDigit(i) {
     return i.toString().length > 1
 }
-
+/** ООЧЕНЬ ЖИРНЫЙ ОБЪЕКТ
+    хранит в себе всё расписание и при необходимости обновляет
+    сделано для быстродействия
+    вызывается в коде только 1 раз из main.js, дальше по коду раскидывается ссылки по типу "resources.data"
+**/
 class TritData extends EventEmitter{
     constructor() {
         super();
+        this.data = {};
+        this.groups = [];
+        this.timetable = [];
         console.log('Exemplar TritData created.')
     }
 
@@ -28,71 +35,47 @@ class TritData extends EventEmitter{
         return api('https://trit.biz/rr/json_timetable.php');
     }
     getData(callback){
-        this.getFSData(DATA_FILE,(data,err)=>{
-            if (!err){
-                const back_date = new Date(data.date);
-                if (back_date.getDate() === now_date.getDate()){
-                    callback(data.data);
-                } else {
-                    this.updFSData(DATA_FILE,TritData.getDataPromise(),callback)
-                }
-            } else {
-                this.updFSData(DATA_FILE,TritData.getDataPromise(),callback);
-            }
-        });
+        if (Object.keys(this.data).length) return callback(this.data);
+        else this._checkUpdateFile(DATA_FILE, callback);
     }
     getGroups(callback){
-        this.getFSData(GROUPS_FILE,(data,err)=>{
-            if (!err){
-                const back_date = new Date(data.date);
-                if (back_date.getDate() === now_date.getDate()){
-                    callback(data.data);
-                } else {
-                    this.updFSData(GROUPS_FILE,TritData.getGroupsPromise(),callback);
-                }
-            } else {
-                this.updFSData(GROUPS_FILE,TritData.getGroupsPromise(),callback)
-            }
-        });
+        if (this.groups.length) return callback(this.groups);
+        else this._checkUpdateFile(GROUPS_FILE, callback);
     }
     getTimeTable(callback) {
-        this.getFSData(TIMETABLE_FILE,(data,err)=>{
+        if (this.timetable.length) return callback(this.timetable);
+        else this._checkUpdateFile(TIMETABLE_FILE, callback);
+    }
+    _checkUpdateFile(file, callback) {
+        this.getFSData(file,(data,err)=>{
             if (!err){
                 const back_date = new Date(data.date);
                 if (back_date.getDate() === now_date.getDate()){
-                    callback(data.data);
+                    if (callback) callback(data.data);
+                    // кэшируем данные
+                    switch (file) {
+                        case DATA_FILE:
+                            return this.data = data.data;
+                        case GROUPS_FILE:
+                            return this.groups = data.data;
+                        case TIMETABLE_FILE:
+                            return this.timetable = data.data
+                    }
                 } else {
-                    this.updFSData(TIMETABLE_FILE,TritData.getTimeTablePromise(),callback);
+                    this.updateFSData(DATA_FILE,TritData.getDataPromise(),callback)
                 }
             } else {
-                this.updFSData(TIMETABLE_FILE,TritData.getTimeTablePromise(),callback)
+                this.updateFSData(file,TritData.getDataPromise(),callback);
             }
         });
     }
-    getFSData(name, callback){
-        fs.access(name, fs.constants.F_OK, (err) => {
-            if (!err){
-                fs.readFile(name, 'utf-8', (err,data)=>{
-                    if (!err){
-                        callback(JSON.parse(data));
-                    } else {
-                        console.error(`getFSData: ${err}`);
-                        callback(undefined,err)
-                    }
-                });
-            } else {
-                console.warn(`${name} отсутствует или занят.\n${err}`);
-                callback(undefined,err);
-            }
-        });
-    }
-    updFSData(name, promise, callback){
+    updateFSData(name, promise, callback){
         promise.then(response=>{
             switch (name) {
                 case TIMETABLE_FILE:
                     const timetable = response.filter((elem)=>elem.includes('lesson'))
                         .map(elem=>
-                            `${isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
+                            `${_isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${_isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${_isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${_isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
                     fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
                     if (callback) callback(timetable);
                     break;
@@ -112,38 +95,74 @@ class TritData extends EventEmitter{
             })
         });
     }
+    getFSData(name, callback){
+        fs.access(name, fs.constants.F_OK, (err) => {
+            if (!err){
+                fs.readFile(name, 'utf-8', (err,data)=>{
+                    if (!err){
+                        callback(JSON.parse(data));
+                    } else {
+                        console.error(`getFSData: ${err}`);
+                        // вот тут лучше на null не править, сначала надо проверить нет ли где typeof === 'undefined'
+                        callback(undefined,err)
+                    }
+                });
+            } else {
+                console.warn(`${name} отсутствует или занят.\n${err}`);
+                // вот тут лучше на null не править, сначала надо проверить нет ли где typeof === 'undefined'
+                callback(undefined,err);
+            }
+        });
+    }
     CheckChange(){
         TritData.getDataPromise().then(data_inet=>{
-            // let pairChanges = [];
-            let pairs_change;
+            const pairs_change = {
+                'понедельник':{date:'', changes:{}},
+                'вторник':{date:'', changes:{}},
+                'среда':{date:'', changes:{}},
+                'четверг':{date:'', changes:{}},
+                'пятница':{date:'', changes:{}},
+                'суббота':{date:'', changes:{}},
+            };
+            let changes_counter = 0;
             this.getFSData(DATA_FILE,(data_fs,err)=>{
                 if (!err){
                     TritData.getGroupsPromise().then(response=>{
                         for (let one_group of response){
                             for (let one_weekday of Object.keys(data_inet[one_group]['weekdays'])){
-                                data_inet[one_group]['weekdays'][one_weekday].pairs.forEach((pair_inet, i_inet)=>{
+                                let data_object = data_inet[one_group]['weekdays'][one_weekday];
+                                data_object.pairs.forEach((pair_inet, pair_index_inet)=>{
                                     let changes = data_fs.data[one_group]['weekdays'][one_weekday].pairs
                                         .some((pair_fs, i_fs)=>
-                                            (pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && i_inet === i_fs) === true);
+                                            (pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && pair_index_inet === i_fs) === true);
                                     if (!changes){
-                                        if (typeof pairs_change === "undefined") pairs_change = {};
-                                        if (typeof pairs_change[one_group] === "undefined") pairs_change[one_group] = {};
-                                        if (typeof pairs_change[one_group][one_weekday] === "undefined") pairs_change[one_group][one_weekday] = {};
-                                        pairs_change[one_group][one_weekday][i_inet+1]={
-                                            'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[i_inet],
+                                        changes_counter++;
+                                        if (typeof pairs_change[one_weekday].changes[one_group] === "undefined") pairs_change[one_weekday].changes[one_group] = {};
+                                        pairs_change[one_weekday].changes[one_group][pair_index_inet+1]={
+                                            'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[pair_index_inet],
                                             'stock': pair_inet
                                         };
                                     }
                                 });
                             }
                         }
-                        if (pairs_change) this.emit('changes', pairs_change);
-                    }).catch(err => console.error(`Check pairs change error:\n${err}`))
+
+                        if (changes_counter) {
+                            this.emit('changes', pairs_change, changes_counter);
+                        }
+                    }).catch(err => {
+                        console.error('Error in trit_data CheckChange');
+                        console.trace(err);
+                    })
                 } else {
-                    this.updFSData(DATA_FILE,TritData.getDataPromise())
+                    this.updateFSData(DATA_FILE, TritData.getDataPromise());
+                    this._checkUpdateFile(DATA_FILE)
                 }
             });
-        }).catch(err => console.error(`Check pairs change error:\n${err}`));
+        }).catch(err => {
+            console.error(`Check pairs change error:`);
+            console.trace(err)
+        });
     }
 }
 

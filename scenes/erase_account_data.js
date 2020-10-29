@@ -1,9 +1,7 @@
-const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
 
-const sql_db = new SqlDB();
-const erase_account_data = function (reverse_markup) {
+const erase_account_data = function (reverse_markup, table_style, res) {
     const buttons = {
         erase:{text: 'Удаление из системы', color:'negative', action: function (ctx) {
                 ctx.reply('Вы уверены?',null,Markup.keyboard(
@@ -51,7 +49,7 @@ const erase_account_data = function (reverse_markup) {
             if (buttons_opt.button==='Нет') buttons.exit.action(ctx);
             else {
                 const sql = `DELETE FROM ${process.env.DB_TABLE} WHERE vk_id = ${ctx.message.from_id}`;
-                sql_db.callback(sql, [], (err) => {
+                res.db.callback(sql, [], (err) => {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.', null, reverse_markup);
                         return console.error(err);

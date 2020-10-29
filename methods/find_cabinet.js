@@ -15,12 +15,12 @@ const find_cabinet = (reverse_markup, table_style, res) => {
                     for (let weekday of Object.keys(data[i]['weekdays'])){
                         cabs = [...cabs,...data[i]['weekdays'][weekday]['pairs']
                             .filter(item=>item.room === cabinet)
-                            .map(item=>[item['room'], i,item['name']])]
+                            .map(item=>[item['name'], `гр.${i}`])]
                     }
                 } else {
                     for (let pair of data[i]['weekdays'][weekday]['pairs']){
                         if (pair['room'] && pair['room'].indexOf(cabinet)!== -1){
-                            cabs.push([pair['room'], i,pair['name']]);
+                            cabs.push([pair['name'], `гр.${i}`]);
                         }
                     }
                 }

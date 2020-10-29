@@ -1,13 +1,8 @@
-const SqlDB = require('../tools/sql_data');
 const Scene = require('node-vk-bot-api/lib/scene');
 const Markup = require('node-vk-bot-api/lib/markup');
-const TritData = require('../tools/trit_data');
-const getUserInfo = require('../tools/user_info');
 
-const sql_db = new SqlDB();
-const trit_data = new TritData();
 
-const tune_bot = (reverse_markup) => {
+const tune_bot = (reverse_markup, table_style, resources) => {
     return new Scene('tune_bot',
         (ctx) => {
             ctx.scene.next();
@@ -42,7 +37,7 @@ const tune_bot = (reverse_markup) => {
             }
 
             ctx.scene.next();
-            trit_data.getGroups((groups)=>{
+            resources.data.getGroups((groups)=>{
                 ctx.reply('Номер вашей группы?', null, Markup
                     .keyboard(groups, {columns: 3}).oneTime()
                 );
@@ -51,7 +46,7 @@ const tune_bot = (reverse_markup) => {
         async (ctx) => {
             ctx.session.stud_group = +ctx.message.text;
 
-            let valid_groups = await new Promise(resolve => trit_data.getGroups(resolve));
+            let valid_groups = await new Promise(resolve => resources.data.getGroups(resolve));
             if (valid_groups.indexOf(+ctx.session.stud_group) === -1) {
                 ctx.scene.leave();
                 return ctx.reply('Указанная группа неверная, бот не настроен.',
@@ -69,13 +64,13 @@ const tune_bot = (reverse_markup) => {
             if (ctx.session.notify_e_d) str_reply += '\nсообщает об изменении в расписании';
             if (!ctx.session.notify_c && !ctx.session.notify_e_d) str_reply += '\nничего не делает.';
 
-            const user_info = await getUserInfo(ctx.message.from_id);
+            const user_info = await resources.db.userInfo(ctx.message.from_id);
 
             let sql;
             if (!user_info) {
                 sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES(?,?,?,?,?)`;
                 const values = [ctx.message.from_id, ctx.session.notify_c, ctx.session.notify_e_d, 1, ctx.session.stud_group];
-                sql_db.callback(sql, values, (err) =>{
+                resources.db.callback(sql, values, (err) =>{
                     if (err) {
                         ctx.reply(str_reply, null, reverse_markup);
                         return console.error(err);
@@ -83,7 +78,7 @@ const tune_bot = (reverse_markup) => {
                 });
             } else {
                 sql = `UPDATE ${process.env.DB_TABLE} SET notify_c = ${ctx.session.notify_c},notify_e_d = ${ctx.session.notify_e_d},user_group = ${ctx.session.stud_group} WHERE vk_id = ${ctx.message.from_id}`;
-                sql_db.callback(sql, [], function (err) {
+                resources.db.callback(sql, [], function (err) {
                     if (err) {
                         ctx.reply(str_reply, null, reverse_markup);
                         return console.error(err);

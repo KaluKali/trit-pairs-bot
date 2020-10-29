@@ -16,14 +16,9 @@ const Message = require('./tools/message_tools/message');
 const levenshtein = require('./tools/message_tools/levenshtein');
 // tools
 const server_time = new ServerTime();
+// ОООЧЕНЬ жирный класс, в коде его больше нигде лучше не вызывать, подробнее - в его файле
 const trit_data = new TritData();
 const sql_db = new SqlDb();
-const saveImageVK = require('./tools/image_tools/save_image_into_vk');
-const gmSettings = {
-    imageMagick: true,
-};
-if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\ImageMagick-7.0.10-Q16-HDRI\\';
-const gm = require('gm').subClass(gmSettings);
 // resource
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание на сегодня', 'positive'),
@@ -52,6 +47,7 @@ schedule.scheduleJob('0 0 */6 ? * *', ()=>{
         });
     }, 30000);
 });
+// prod 0 0 */6 ? * *
 // Every hour 0 0 * ? * *
 // Every second * * * ? * *
 // default 0 * * * *
@@ -103,110 +99,37 @@ bot.command('неделя', (ctx)=>{
     ctx.scene.enter('week');
 });
 bot.command('найди', async (ctx)=>{
-    let msg = await Message.parseFind(ctx.message.text);
+    let msg = await Message.parseFind(ctx.message.text, {data: trit_data});
     ctx_methods(reverse_menu, null, { data: trit_data }).find_pairs(ctx,msg);
 });
 bot.command('кабинет', async (ctx)=>{
-    let msg = await Message.parseCabinet(ctx.message.text);
+    let msg = await Message.parseCabinet(ctx.message.text, {data: trit_data});
     ctx_methods(reverse_menu, null, { data: trit_data }).find_cabinet(ctx,msg);
 });
 bot.command('настройки', (ctx) => {
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
-    let msg = await Message.parsePairsDay(ctx.message.text);
-    ctx_methods(reverse_menu, null, { data: trit_data }).pairs_day(ctx,msg);
+    let msg = await Message.parsePairsDay(ctx.message.text, {data: trit_data});
+    ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
 });
+// bot.command('test2228', async (ctx)=>{
+//     trit_data.CheckChange()
+// });
 
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
         ctx.scene.enter('unknown_command',0)
     }
 });
-trit_data.on('changes', (data_changes)=>{
-    let pairDayWeek = {
-        'понедельник':[],
-        'вторник':[],
-        'среда':[],
-        'четверг':[],
-        'пятница':[],
-        'суббота':[],
-    };
-    for (let one_group in data_changes){
-        for (let one_day in data_changes[one_group]){
-            pairDayWeek[one_day].push({
-                'group':one_group,
-                'changes':data_changes[one_group][one_day]
-            })
-        }
-    }
 
-    let week_markups = [];
-    const title_indent = 3;
-    for (let one_day in pairDayWeek){
-        // title indent
-        let pangoMarkup = `\n<span><b>${one_day[0].toUpperCase() + one_day.slice(1)}</b>\n\n`;
-        pairDayWeek[one_day].forEach(dayChanges=>{
-            pangoMarkup += `\nГруппа ${dayChanges.group}\n\n`;
-            for (let pairIndex in dayChanges.changes){
-                let stock = `${dayChanges.changes[pairIndex].stock.name ? dayChanges.changes[pairIndex].stock.name : '—'} ${dayChanges.changes[pairIndex].stock.room ? `  каб. ${dayChanges.changes[pairIndex].stock.room}` : '  каб. —'}`;
-                let modify = `${dayChanges.changes[pairIndex].modified.name ? dayChanges.changes[pairIndex].modified.name : '—'} ${dayChanges.changes[pairIndex].modified.room ? `  каб. ${dayChanges.changes[pairIndex].modified.room}` : '  каб. —'}`;
-                pangoMarkup += `${pairIndex}. <s>${stock}</s><span background="lightgreen">${modify}</span>\n`
-            }
-        });
-        week_markups.push(pangoMarkup);
-    }
-
-    let monday_indent = week_markups[0].split('\n').length-title_indent;
-    let thursday_indent = week_markups[3].split('\n').length-title_indent;
-
-    let tuesday_indent = week_markups[1].split('\n').length-title_indent;
-    let friday_indent = week_markups[4].split('\n').length-title_indent;
-
-    if (monday_indent > thursday_indent) {
-        for (let i = monday_indent - thursday_indent; i>0; i--) week_markups[3] += '\n'
+trit_data.on('changes', async (data_changes, amount)=>{
+    if (amount > 20) {
+        ctx_methods().send_text_changes(data_changes, bot)
     } else {
-        for (let i = thursday_indent - monday_indent; i>0; i--) week_markups[0] += '\n'
+        ctx_methods().send_image_changes(data_changes, bot)
     }
-    if (tuesday_indent > friday_indent) {
-        for (let i = tuesday_indent - friday_indent; i>0; i--) week_markups[4] += '\n'
-    } else {
-        for (let i = friday_indent - tuesday_indent; i>0; i--) week_markups[1] += '\n'
-    }
-
-    for (let i=0;i<week_markups.length;i++) week_markups[i] += '</span>';
-
-    gm().out('-kerning','1')
-        .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 3)).join('')}</markup>`)
-        .out('-orient','top-right').out('+append')
-        .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 6 && index >= 3)).join('')}</markup>`)
-        .out('-orient','top-right').out('+append')
-        .borderColor('#FFFFFF')
-        .border(20,20)
-        .toBuffer('JPEG',async (err,buffer)=>{
-            if (err){
-                console.log(`toBuffer in main.js error: ${err}`);
-                for (let i = 1; i < 3;i++){
-                    await bot.execute('messages.send', {
-                        peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
-                        random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                        message: 'Выложено новое расписание!',
-                    }).catch(error => console.error(`Main.js error: ${error}`));
-                }
-                return trit_data.updFSData('data.json', TritData.getDataPromise());
-            } else {
-                await saveImageVK(buffer,bot,async (photo_data)=>{
-                    for (let i = 1; i < 3;i++){
-                        await bot.execute('messages.send', {
-                            peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
-                            random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                            attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
-                        }).catch(error => console.error(error));
-                    }
-                    trit_data.updFSData('data.json', TritData.getDataPromise());
-                });
-            }
-        });
+    return trit_data.updateFSData('data.json', TritData.getDataPromise());
     // todo save Conversation-ids into db API 5.124 в ответе на вызов messages.send с параметром peer_ids возвращается conversation_message_id.
 });
 bot.startPolling((err) => {
