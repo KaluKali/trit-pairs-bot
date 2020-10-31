@@ -15,6 +15,8 @@ function methods(reverse_markup, table_style, resources) {
         find_pairs:require('./find_pairs')(...args),
         find_cabinet:require('./find_cabinet')(...args),
         mailing:require('./mailing')(...args),
+        changes_mailing:require('./changes_mailing')(...args),
+        spam_into_conversations:require('./spam_into_conversations')(...args),
         send_image:require('./representation/send_image')(...args),
         send_image_changes:require('./representation/send_image_changes')(...args),
         send_text_changes:require('./representation/send_text_changes')(...args)

@@ -145,14 +145,15 @@ class TritData extends EventEmitter{
                     TritData.getGroupsPromise().then(response=>{
                         for (let one_group of response){
                             for (let one_weekday of Object.keys(data_inet[one_group]['weekdays'])){
-                                let data_object = data_inet[one_group]['weekdays'][one_weekday];
-                                data_object.pairs.forEach((pair_inet, pair_index_inet)=>{
+                                let groups_pairs_day_obj = data_inet[one_group]['weekdays'][one_weekday];
+                                groups_pairs_day_obj.pairs.forEach((pair_inet, pair_index_inet)=>{
                                     let changes = data_fs.data[one_group]['weekdays'][one_weekday].pairs
                                         .some((pair_fs, i_fs)=>
                                             (pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && pair_index_inet === i_fs) === true);
                                     if (!changes){
                                         changes_counter++;
                                         if (typeof pairs_change[one_weekday].changes[one_group] === "undefined") pairs_change[one_weekday].changes[one_group] = {};
+                                        pairs_change[one_weekday].date = groups_pairs_day_obj.date;
                                         pairs_change[one_weekday].changes[one_group][pair_index_inet+1]={
                                             'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[pair_index_inet],
                                             'stock': pair_inet
@@ -163,7 +164,7 @@ class TritData extends EventEmitter{
                         }
 
                         if (changes_counter) {
-                            this.emit('changes', pairs_change, changes_counter);
+                            this.emit('data_changed', pairs_change, changes_counter);
                         }
                     }).catch(err => {
                         console.error('Error in trit_data CheckChange');

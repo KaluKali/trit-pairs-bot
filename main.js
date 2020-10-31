@@ -18,6 +18,7 @@ const levenshtein = require('./tools/message_tools/levenshtein');
 const server_time = new ServerTime();
 // ОООЧЕНЬ жирный класс, в коде его больше нигде лучше не вызывать, подробнее - в его файле
 const trit_data = new TritData();
+// Создает подключение к базе
 const sql_db = new SqlDb();
 // resource
 const reverse_menu = Markup.keyboard([
@@ -30,10 +31,18 @@ const ctx_scenes = require('./scenes/index');
 const ctx_methods = require('./methods/index');
 const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
 // jobs
-schedule.scheduleJob('00 00 07 * * 1-6', ()=>{
+schedule.scheduleJob('*/10 * * * 1-6', ()=>{
     return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
 });
-schedule.scheduleJob('0 0 */6 ? * *', ()=>{
+// prod 0 0 */6 ? * *
+// Every hour 0 0 * ? * *
+// Every second * * * ? * *
+schedule.scheduleJob('*/30 * * * *', ()=>{
+    console.log('Checked pairs change.');
+    trit_data.CheckChange()
+});
+// restart
+schedule.scheduleJob('0 0 */12 ? * *', ()=>{
     bot.stop();
     console.log('Timeout to restart bot is set.');
     setTimeout(()=>{
@@ -46,14 +55,6 @@ schedule.scheduleJob('0 0 */6 ? * *', ()=>{
             }
         });
     }, 30000);
-});
-// prod 0 0 */6 ? * *
-// Every hour 0 0 * ? * *
-// Every second * * * ? * *
-// default 0 * * * *
-schedule.scheduleJob('0 * * * *', ()=>{
-    console.log('Checked pairs change.');
-    trit_data.CheckChange()
 });
 // scenes
 bot.use(new Session().middleware());
@@ -92,9 +93,6 @@ bot.use((ctx, next)=>{
     next();
 });
 
-bot.command('поиск пары', (ctx)=>{
-    ctx.reply('Напиши мне \"найди {пара}\"');
-});
 bot.command('неделя', (ctx)=>{
     ctx.scene.enter('week');
 });
@@ -113,22 +111,21 @@ bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text, {data: trit_data});
     ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
 });
-// bot.command('test2228', async (ctx)=>{
+// bot.command('1213', async (ctx)=>{
 //     trit_data.CheckChange()
 // });
 
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
+        // 0 в ctx.scene.enter фиксит определенный баг, не помню какой...
         ctx.scene.enter('unknown_command',0)
     }
 });
 
-trit_data.on('changes', async (data_changes, amount)=>{
-    if (amount > 20) {
-        ctx_methods().send_text_changes(data_changes, bot)
-    } else {
-        ctx_methods().send_image_changes(data_changes, bot)
-    }
+trit_data.on('data_changed', async (data_changes, amount)=>{
+    console.log(`New timetable! Changes amount: ${amount}.`);
+    ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).spam_into_conversations(data_changes,amount,bot);
+    ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).changes_mailing(data_changes,amount,bot);
     return trit_data.updateFSData('data.json', TritData.getDataPromise());
     // todo save Conversation-ids into db API 5.124 в ответе на вызов messages.send с параметром peer_ids возвращается conversation_message_id.
 });

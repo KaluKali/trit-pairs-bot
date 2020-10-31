@@ -1,5 +1,5 @@
 const sendTextImage = () => {
-    return async (data_changes, bot)=>{
+    return (data_changes)=>{
         let text_changes = `Изменилось расписание:\n\n`;
 
         for (let one_day in data_changes){
@@ -12,13 +12,8 @@ const sendTextImage = () => {
                 text_changes+='\n'
             }
         }
-        for (let i = 1; i < process.env.TOTAL_CONVERSATION;i++){
-            await bot.execute('messages.send', {
-                peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
-                random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                message: text_changes,
-            }).catch(error => console.error(`Main.js error: ${error}`));
-        }
+        text_changes+='\nhttps://trit.biz/rr/';
+        return text_changes;
     }
 };
 

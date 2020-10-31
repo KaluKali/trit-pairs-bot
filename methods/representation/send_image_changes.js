@@ -1,4 +1,3 @@
-const saveImageIntoVk = require('../../tools/image_tools/save_image_into_vk');
 const gmSettings = {
     imageMagick: true,
 };
@@ -6,13 +5,14 @@ if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\Image
 const gm = require('gm').subClass(gmSettings);
 
 const sendImageChanges = () => {
-    return async (data_changes, bot) => {
+    return async (data_changes, group_filter=[], callback) => {
         let week_markups = [];
+
         const title_indent = 3;
         for (let one_day in data_changes) {
             if (Object.keys(data_changes[one_day].changes).length) {
                 let pangoMarkup = `\n<span><b>${one_day[0].toUpperCase() + one_day.slice(1)}</b>\n\n`;
-                Object.keys(data_changes[one_day].changes).forEach(group=>{
+                Object.keys(data_changes[one_day].changes).filter(group=>group_filter.length ? group_filter.includes(parseInt(group)) : true).forEach(group=>{
                     pangoMarkup += `\nГруппа ${group}\n\n`;
                     for (let pairIndex in data_changes[one_day].changes[group]){
                         const modify_pair = data_changes[one_day].changes[group][pairIndex];
@@ -55,28 +55,7 @@ const sendImageChanges = () => {
             .out('-orient','top-right').out('+append')
             .borderColor('#FFFFFF')
             .border(20,20)
-            .toBuffer('JPEG',async (err,buffer)=>{
-                if (err){
-                    console.log(`toBuffer in main.js error: ${err}`);
-                    for (let i = 1; i < process.env.TOTAL_CONVERSATION;i++){
-                        await bot.execute('messages.send', {
-                            peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
-                            random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                            message: 'Выложено новое расписание.',
-                        }).catch(error => console.error(`Main.js error: ${error}`));
-                    }
-                } else {
-                    await saveImageIntoVk(buffer,bot,async (photo_data)=>{
-                        for (let i = 1; i < process.env.TOTAL_CONVERSATION;i++){
-                            await bot.execute('messages.send', {
-                                peer_id: 2000000000+i, // <- inside account id-dialog, DONT unique
-                                random_id: Math.floor(Math.random() * Math.floor(10000000000)),
-                                attachment: `photo${photo_data[0].owner_id}_${photo_data[0].id}`,
-                            }).catch(error => console.error(error));
-                        }
-                    });
-                }
-            });
+            .toBuffer('JPEG',(err,buffer)=>callback(err,buffer));
     }
 };
 
