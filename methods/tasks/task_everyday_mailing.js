@@ -1,9 +1,9 @@
 const table = require('text-table');
-const pairTools = require('../tools/message_tools/pair_tools');
-const textToImage = require('../tools/image_tools/txt_table_to_image');
-const saveImageVK = require('../tools/image_tools/save_image_into_vk');
+const pairTools = require('../../tools/message_tools/pair_tools');
+const textToImage = require('../../tools/image_tools/txt_table_to_image');
+const saveImageVK = require('../../tools/image_tools/save_image_into_vk');
 
-const mailing = (reverse_markup, table_style, resources) => {
+const task_everyday_mailing = (reverse_markup, table_style, resources) => {
     const now_time = new Date();
 
     return async (weekday, message, bot)=>{
@@ -50,4 +50,4 @@ const mailing = (reverse_markup, table_style, resources) => {
     }
 };
 
-module.exports = mailing;
+module.exports = task_everyday_mailing;

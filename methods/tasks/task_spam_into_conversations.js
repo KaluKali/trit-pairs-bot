@@ -1,6 +1,6 @@
-const send_image_changes = require('./representation/send_image_changes');
-const send_text_changes = require('./representation/send_text_changes');
-const saveImageIntoVk = require('../tools/image_tools/save_image_into_vk');
+const send_image_changes = require('../representation/send_image_changes');
+const send_text_changes = require('../representation/send_text_changes');
+const saveImageIntoVk = require('../../tools/image_tools/save_image_into_vk');
 
 async function task_mailing(bot, message, attachment) {
     let sending_params = {
@@ -18,7 +18,7 @@ async function task_mailing(bot, message, attachment) {
     }
 }
 
-const spam_into_conversations = (reverse_markup, table_style, res) => {
+const task_spam_into_conversations = (reverse_markup, table_style, res) => {
     return async (data_changes, amount, bot) => {
         if (amount > 500) return task_mailing(bot, 'Выложено новое расписание!\nhttps://trit.biz/rr/')
         if (amount > 20) return task_mailing(bot, send_text_changes()(data_changes));
@@ -36,4 +36,4 @@ const spam_into_conversations = (reverse_markup, table_style, res) => {
     }
 };
 
-module.exports = spam_into_conversations;
+module.exports = task_spam_into_conversations;
