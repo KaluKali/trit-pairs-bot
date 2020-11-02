@@ -146,6 +146,7 @@ class TritData extends EventEmitter{
                         for (let one_group of response){
                             for (let one_weekday of Object.keys(data_inet[one_group]['weekdays'])){
                                 let groups_pairs_day_obj = data_inet[one_group]['weekdays'][one_weekday];
+                                pairs_change[one_weekday].date = groups_pairs_day_obj.date;
                                 groups_pairs_day_obj.pairs.forEach((pair_inet, pair_index_inet)=>{
                                     let changes = data_fs.data[one_group]['weekdays'][one_weekday].pairs
                                         .some((pair_fs, i_fs)=>
@@ -153,7 +154,6 @@ class TritData extends EventEmitter{
                                     if (!changes){
                                         changes_counter++;
                                         if (typeof pairs_change[one_weekday].changes[one_group] === "undefined") pairs_change[one_weekday].changes[one_group] = {};
-                                        pairs_change[one_weekday].date = groups_pairs_day_obj.date;
                                         pairs_change[one_weekday].changes[one_group][pair_index_inet+1]={
                                             'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[pair_index_inet],
                                             'stock': pair_inet

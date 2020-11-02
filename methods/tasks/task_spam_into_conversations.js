@@ -14,7 +14,9 @@ async function task_mailing(bot, message, attachment) {
 
     for (let i = 1; i < TOTAL_CONV;i++){
         sending_params.peer_id+=1;
-        await bot.execute('messages.send', sending_params).catch(error => console.error(`task_mailing error: ${error} conversation id: ${sending_params.peer_id}`));
+        await bot.execute('messages.send', sending_params)
+            .then(()=>console.log(`task_mailing success ${sending_params.peer_id}`))
+            .catch(error => console.error(`task_mailing error: ${error} conversation id: ${sending_params.peer_id}`));
     }
 }
 
