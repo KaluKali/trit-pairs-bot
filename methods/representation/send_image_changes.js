@@ -12,15 +12,18 @@ const sendImageChanges = () => {
         for (let one_day in data_changes) {
             if (Object.keys(data_changes[one_day].changes).length) {
                 let pangoMarkup = `\n<span><b>${one_day[0].toUpperCase() + one_day.slice(1)}</b>\n\n`;
-                Object.keys(data_changes[one_day].changes).filter(group=>group_filter.length ? group_filter.includes(parseInt(group)) : true).forEach(group=>{
-                    pangoMarkup += `\nГруппа ${group}\n\n`;
-                    for (let pairIndex in data_changes[one_day].changes[group]){
-                        const modify_pair = data_changes[one_day].changes[group][pairIndex];
-                        let stock = `${modify_pair.stock.name ? modify_pair.stock.name : '—'} ${modify_pair.stock.room ? `  каб. ${modify_pair.stock.room}` : '  каб. —'}`;
-                        let modify = `${modify_pair.modified.name ? modify_pair.modified.name : '—'} ${modify_pair.modified.room ? `  каб. ${modify_pair.modified.room}` : '  каб. —'}`;
-                        pangoMarkup += `${pairIndex}. <span background="lightgreen">${modify}</span><s>${stock}</s>\n`
-                    }
-                });
+                const groupChangesFiltred = Object.keys(data_changes[one_day].changes).filter(group=>group_filter.length ? group_filter.includes(parseInt(group)) : true);
+                if (groupChangesFiltred.length) {
+                    groupChangesFiltred.forEach(group=>{
+                        pangoMarkup += `\nГруппа ${group}\n\n`;
+                        for (let pairIndex in data_changes[one_day].changes[group]){
+                            const modify_pair = data_changes[one_day].changes[group][pairIndex];
+                            let stock = `${modify_pair.stock.name ? modify_pair.stock.name : '—'} ${modify_pair.stock.room ? `  каб. ${modify_pair.stock.room}` : '  каб. —'}`;
+                            let modify = `${modify_pair.modified.name ? modify_pair.modified.name : '—'} ${modify_pair.modified.room ? `  каб. ${modify_pair.modified.room}` : '  каб. —'}`;
+                            pangoMarkup += `${pairIndex}. <span background="lightgreen">${stock}</span><s>${modify}</s>\n`
+                        }
+                    });
+                } else return callback(null,null);
                 week_markups.push(pangoMarkup);
             }
         }

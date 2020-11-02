@@ -4,10 +4,10 @@ const sendTextImage = () => {
 
         for (let one_day in data_changes){
             if (Object.keys(data_changes[one_day]).length){
-                text_changes+=`${one_day} ${data_changes[one_day].date}: `;
+                text_changes+=`${one_day} ${data_changes[one_day].date}: гр. `;
 
                 Object.keys(data_changes[one_day].changes).forEach(group=>{
-                    text_changes += `гр. ${group}, `;
+                    text_changes += `${group}, `;
                 });
                 text_changes+='\n'
             }

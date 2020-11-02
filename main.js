@@ -31,12 +31,12 @@ const ctx_scenes = require('./scenes/index');
 const ctx_methods = require('./methods/index');
 const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
 // jobs
-schedule.scheduleJob('*/10 * * * 1-6', ()=>{
-    return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
-});
 // prod 0 0 */6 ? * *
 // Every hour 0 0 * ? * *
 // Every second * * * ? * *
+schedule.scheduleJob('*/10 * * * 1-6', ()=>{
+    return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
+});
 schedule.scheduleJob('*/30 * * * *', ()=>{
     console.log('Checked pairs change.');
     trit_data.CheckChange()
@@ -111,9 +111,13 @@ bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text, {data: trit_data});
     ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
 });
-// bot.command('1213', async (ctx)=>{
-//     trit_data.CheckChange()
-// });
+bot.command('1213', async (ctx)=>{
+    if (ctx.message.peer_id === 461450586){
+        trit_data.CheckChange();
+        ctx.reply('checked', null, reverse_menu);
+    }
+    // ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
+});
 
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
