@@ -10,7 +10,7 @@ async function task_mailing(bot, message, attachment) {
     if (message) sending_params.message = message;
     if (attachment) sending_params.attachment = attachment;
 
-    const TOTAL_CONV = 2;
+    const TOTAL_CONV = 13;
 
     for (let i = 1; i < TOTAL_CONV;i++){
         sending_params.peer_id+=1;
@@ -22,7 +22,7 @@ async function task_mailing(bot, message, attachment) {
 
 const task_spam_into_conversations = (reverse_markup, table_style, res) => {
     return async (data_changes, amount, bot) => {
-        if (amount > 500) return task_mailing(bot, 'Выложено новое расписание!\nhttps://trit.biz/rr/');
+        if (amount > 200) return task_mailing(bot, 'Выложено новое расписание!\nhttps://trit.biz/rr/');
         if (amount > 20) return task_mailing(bot, send_text_changes()(data_changes));
 
         send_image_changes()(data_changes, [], async (err, buffer)=>{

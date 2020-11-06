@@ -3,6 +3,9 @@ const Markup = require('node-vk-bot-api/lib/markup');
 
 
 const notify_changes = function (reverse_markup, table_style, resources) {
+    const optional_buttons = [
+        Markup.button('Закончить', 'primary'),
+    ];
     return new Scene('notify_c',
         ctx=>{
             if (ctx.message.payload) {

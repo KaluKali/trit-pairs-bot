@@ -37,6 +37,9 @@ const leven_list = ['расписание','найди','помощь','наст
 schedule.scheduleJob('*/10 * * * 1-6', ()=>{
     return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
 });
+
+//Обратите внимание: для того, чтобы получить информацию о беседе с ключом доступа сообщества, у сообщества должны быть права администратора в беседе.
+// тоесть без прав администратора информацию даже по getConversations не получить
 schedule.scheduleJob('*/30 * * * *', ()=>{
     console.log('Checked pairs change.');
     trit_data.CheckChange()
@@ -92,7 +95,7 @@ bot.use((ctx, next)=>{
     }
     next();
 });
-
+bot.command('начать', (ctx)=>ctx.reply('Начните с выбора пункта в меню "настройки".', null, reverse_menu));
 bot.command('неделя', (ctx)=>{
     ctx.scene.enter('week');
 });
@@ -111,13 +114,7 @@ bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text, {data: trit_data});
     ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
 });
-bot.command('1213', async (ctx)=>{
-    if (ctx.message.peer_id === 461450586){
-        trit_data.CheckChange();
-        ctx.reply('checked', null, reverse_menu);
-    }
-    // ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
-});
+
 
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){

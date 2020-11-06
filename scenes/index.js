@@ -12,7 +12,6 @@ function scenes(reverse_markup, table_style, resources) {
         require('./group')(...args),
         require('./notification/notify_changes')(...args),
         require('./notification/notify_every_day')(...args),
-        require('./tune_bot')(...args),
         require('./settings')(...args),
         require('./notification/choice_notify')(...args),
         require('./erase_account_data')(...args),
