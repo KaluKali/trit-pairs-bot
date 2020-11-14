@@ -65,7 +65,7 @@ const notify_every_day = function (reverse_markup, table_style, resources) {
                             ], {columns: 2}));
                         } else {
                             ctx.scene.next();
-                            ctx.reply('Введите время получения ежедневных уведомлений в формате Часы:Минуты, пример:\n07:00');
+                            ctx.reply('Введите время получения ежедневных уведомлений в формате Часы:Минуты, пример:\n07:00', null, Markup.keyboard([]).oneTime());
                         }
                         break;
                     case 'Да':

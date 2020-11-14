@@ -38,8 +38,8 @@ schedule.scheduleJob('*/10 * * * 1-6', ()=>{
     return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
 });
 
-//Обратите внимание: для того, чтобы получить информацию о беседе с ключом доступа сообщества, у сообщества должны быть права администратора в беседе.
-// тоесть без прав администратора информацию даже по getConversations не получить
+// Обратите внимание: для того, чтобы получить информацию о беседе с ключом доступа сообщества, у сообщества должны быть права администратора в беседе.
+// то есть без прав администратора информацию даже по getConversations не получить
 schedule.scheduleJob('*/30 * * * *', ()=>{
     console.log('Checked pairs change.');
     trit_data.CheckChange()
@@ -114,7 +114,35 @@ bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text, {data: trit_data});
     ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
 });
+bot.command('1213', async (ctx)=>{
+    if (ctx.message.peer_id === 461450586){
+        trit_data.CheckChange();
+        ctx.reply('checked', null, reverse_menu);
+        // const data = await bot.execute('messages.getConversations', {
+        //     filter:'all',
+        //     group_id:190098834
+        // });
 
+        for (let i=0;i<10;i++){
+            const data = await bot.execute('messages.getConversationsById', {
+                // filter:'all',
+                peer_ids:2000000000+i,
+                group_id:190098834
+            });
+            console.log(JSON.stringify(data))
+        }
+        const data = await bot.execute('messages.editChat', {
+            // filter:'all',
+            peer_ids:2000000008,
+            group_id:190098834,
+            permissions:{change_pin:'owner'}
+        });
+
+
+        console.log(data)
+    }
+    // ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
+});
 
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){

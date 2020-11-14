@@ -22,8 +22,8 @@ async function task_mailing(bot, message, attachment) {
 
 const task_spam_into_conversations = (reverse_markup, table_style, res) => {
     return async (data_changes, amount, bot) => {
-        if (amount > 200) return task_mailing(bot, 'Выложено новое расписание!\nhttps://trit.biz/rr/');
-        if (amount > 20) return task_mailing(bot, send_text_changes()(data_changes));
+        if (amount > 150) return task_mailing(bot, 'Выложено новое расписание!\nhttps://trit.biz/rr/');
+        if (amount > 21) return task_mailing(bot, send_text_changes()(data_changes));
 
         send_image_changes()(data_changes, [], async (err, buffer)=>{
             if (err || !buffer){

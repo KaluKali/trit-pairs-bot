@@ -12,7 +12,7 @@ const task_changes_mailing = (reverse_markup, table_style, resources) => {
                 send_image_changes()(data_changes, [user.user_group, user.notify_groups_c].flat().filter(usr=>usr), (err, buffer)=>{
                     if (buffer) {
                         saveImageIntoVK(buffer,bot,photo_data=>{
-                            bot.sendMessage(user.vk_id, '', `photo${photo_data[0].owner_id}_${photo_data[0].id}`, reverse_markup);
+                            bot.sendMessage(user.vk_id, 'Изменения в расписании:', `photo${photo_data[0].owner_id}_${photo_data[0].id}`, reverse_markup);
                         })
                     }
                 })
