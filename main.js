@@ -101,28 +101,23 @@ bot.command('неделя', (ctx)=>{
 });
 bot.command('найди', async (ctx)=>{
     let msg = await Message.parseFind(ctx.message.text, {data: trit_data});
-    ctx_methods(reverse_menu, null, { data: trit_data }).find_pairs(ctx,msg);
+    await ctx_methods(reverse_menu, null, { data: trit_data }).find_pairs(ctx,msg);
 });
 bot.command('кабинет', async (ctx)=>{
     let msg = await Message.parseCabinet(ctx.message.text, {data: trit_data});
-    ctx_methods(reverse_menu, null, { data: trit_data }).find_cabinet(ctx,msg);
+    await ctx_methods(reverse_menu, null, { data: trit_data }).find_cabinet(ctx,msg);
 });
 bot.command('настройки', (ctx) => {
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
     let msg = await Message.parsePairsDay(ctx.message.text, {data: trit_data});
-    ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
+    await ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
 });
 bot.command('1213', async (ctx)=>{
     if (ctx.message.peer_id === 461450586){
         trit_data.CheckChange();
         ctx.reply('checked', null, reverse_menu);
-        // const data = await bot.execute('messages.getConversations', {
-        //     filter:'all',
-        //     group_id:190098834
-        // });
-
         for (let i=0;i<10;i++){
             const data = await bot.execute('messages.getConversationsById', {
                 // filter:'all',
@@ -131,15 +126,6 @@ bot.command('1213', async (ctx)=>{
             });
             console.log(JSON.stringify(data))
         }
-        const data = await bot.execute('messages.editChat', {
-            // filter:'all',
-            peer_ids:2000000008,
-            group_id:190098834,
-            permissions:{change_pin:'owner'}
-        });
-
-
-        console.log(data)
     }
     // ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
 });
@@ -153,10 +139,12 @@ bot.on((ctx) => {
 
 trit_data.on('data_changed', async (data_changes, amount)=>{
     console.log(`New timetable! Changes amount: ${amount}.`);
-    ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).spam_into_conversations(data_changes,amount,bot);
-    ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).changes_mailing(data_changes,amount,bot);
-    return trit_data.updateFSData('data.json', TritData.getDataPromise());
-    // todo save Conversation-ids into db API 5.124 в ответе на вызов messages.send с параметром peer_ids возвращается conversation_message_id.
+    await ctx_methods(reverse_menu, null, {
+        data: trit_data,
+        db: sql_db
+    }).spam_into_conversations(data_changes, amount, bot);
+    await ctx_methods(reverse_menu, null, {data: trit_data, db: sql_db}).changes_mailing(data_changes, amount, bot);
+    trit_data.updateFSData('data.json', TritData.getDataPromise(), (res)=>trit_data.data=res);
 });
 bot.startPolling((err) => {
     if (!err) console.log('Bot started');

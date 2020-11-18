@@ -25,7 +25,7 @@ const task_spam_into_conversations = (reverse_markup, table_style, res) => {
         if (amount > 150) return task_mailing(bot, 'Выложено новое расписание!\nhttps://trit.biz/rr/');
         if (amount > 21) return task_mailing(bot, send_text_changes()(data_changes));
 
-        send_image_changes()(data_changes, [], async (err, buffer)=>{
+        await send_image_changes()(data_changes, [], async (err, buffer)=>{
             if (err || !buffer){
                 console.log(`toBuffer in spam_into_conversations.js error: ${err}`);
                 await task_mailing(bot, 'Выложено новое расписание!\nhttps://trit.biz/rr/')

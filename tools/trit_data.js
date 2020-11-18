@@ -24,7 +24,6 @@ class TritData extends EventEmitter{
         this.timetable = [];
         console.log('Exemplar TritData created.')
     }
-
     static getDataPromise(){
         return api('https://trit.biz/rr/json2.php');
     }
@@ -46,45 +45,65 @@ class TritData extends EventEmitter{
         if (this.timetable.length) return callback(this.timetable);
         else this._checkUpdateFile(TIMETABLE_FILE, callback);
     }
-    _checkUpdateFile(file, callback) {
-        //todo убрать партянку из свичей
+    _checkUpdateFile(file, cb) {
+        const upd = (file) => {
+            switch (file) {
+                case DATA_FILE:
+                    return this.updateFSData(file,TritData.getDataPromise(),(res)=>{
+                        this.data = res;
+                        if (cb) cb(res);
+                    });
+                case GROUPS_FILE:
+                    return this.updateFSData(file,TritData.getGroupsPromise(),(res)=>{
+                        this.groups = res;
+                        if (cb) cb(res);
+                    });
+                case TIMETABLE_FILE:
+                    return this.updateFSData(file,TritData.getTimeTablePromise(),(res)=>{
+                        this.timetable = res;
+                        if (cb) cb(res);
+                    });
+            }
+        }
         this.getFSData(file,(data,err)=>{
-            if (!err){
+            if (!err) {
                 const back_date = new Date(data.date);
                 if (back_date.getDate() === now_date.getDate()){
-                    if (callback) callback(data.data);
                     // кэшируем данные
                     switch (file) {
                         case DATA_FILE:
-                            return this.data = data.data;
+                            this.data = data.data;
+                            break;
                         case GROUPS_FILE:
-                            return this.groups = data.data;
+                            this.groups = data.data;
+                            break;
                         case TIMETABLE_FILE:
-                            return this.timetable = data.data
+                            this.timetable = data.data
+                            break;
                     }
+                    if (cb) cb(data.data);
                 } else {
-                    switch (file) {
-                        case DATA_FILE:
-                            return this.updateFSData(file,TritData.getDataPromise(),callback);
-                        case GROUPS_FILE:
-                            return this.updateFSData(file,TritData.getGroupsPromise(),callback);
-                        case TIMETABLE_FILE:
-                            return this.updateFSData(file,TritData.getTimeTablePromise(),callback);
-                    }
+                    upd(file)
                 }
             } else {
-                switch (file) {
-                    case DATA_FILE:
-                        return this.updateFSData(file,TritData.getDataPromise(),callback);
-                    case GROUPS_FILE:
-                        return this.updateFSData(file,TritData.getGroupsPromise(),callback);
-                    case TIMETABLE_FILE:
-                        return this.updateFSData(file,TritData.getTimeTablePromise(),callback);
-                }
+                upd(file)
             }
         });
     }
-    updateFSData(name, promise, callback){
+    /**
+     * Data callback
+     *
+     * @callback tritJsonDataCallback
+     * @param {object} response data
+     * @param {object} error or fs error
+     */
+    /**
+     *
+     * @param {string} name // filename
+     * @param {Promise} promise
+     * @param {tritJsonDataCallback} cb
+     */
+    updateFSData(name, promise, cb){
         promise.then(response=>{
             switch (name) {
                 case TIMETABLE_FILE:
@@ -92,19 +111,19 @@ class TritData extends EventEmitter{
                         .map(elem=>
                             `${_isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${_isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${_isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${_isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
                     fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
-                    if (callback) callback(timetable);
+                    if (cb) cb(timetable, null);
                     break;
                 default:
                     fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: response}),'utf-8');
-                    if (callback) callback(response);
+                    if (cb) cb(response, null);
                     break;
             }
         }).catch(err => {
             this.getFSData(name,(fs_data, err_fs)=>{
                 if (!err_fs){
-                    callback(fs_data.data,err);
+                    cb(fs_data.data,err);
                 } else {
-                    callback(null, err_fs);
+                    cb(null, err_fs);
                     console.error(err_fs);
                 }
             })
@@ -119,13 +138,13 @@ class TritData extends EventEmitter{
                     } else {
                         console.error(`getFSData: ${err}`);
                         // вот тут лучше на null не править, сначала надо проверить нет ли где typeof === 'undefined'
-                        callback(undefined,err)
+                        callback(null,err)
                     }
                 });
             } else {
                 console.warn(`${name} отсутствует или занят.\n${err}`);
                 // вот тут лучше на null не править, сначала надо проверить нет ли где typeof === 'undefined'
-                callback(undefined,err);
+                callback(null,err);
             }
         });
     }
@@ -171,8 +190,7 @@ class TritData extends EventEmitter{
                         console.trace(err);
                     })
                 } else {
-                    this.updateFSData(DATA_FILE, TritData.getDataPromise());
-                    this._checkUpdateFile(DATA_FILE)
+                    this.updateFSData(DATA_FILE, TritData.getDataPromise(), (res)=>this.data=res);
                 }
             });
         }).catch(err => {
