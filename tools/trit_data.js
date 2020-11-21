@@ -14,7 +14,7 @@ function _isLargeDigit(i) {
 /** ООЧЕНЬ ЖИРНЫЙ ОБЪЕКТ
     хранит в себе всё расписание и при необходимости обновляет
     сделано для быстродействия
-    вызывается в коде только 1 раз из main.js, дальше по коду раскидывается ссылки по типу "resources.data"
+    вызывается в коде только 1 раз из main.js, дальше по коду раскидываются указатели по типу "resources.data"
 **/
 class TritData extends EventEmitter{
     constructor() {
@@ -182,11 +182,9 @@ class TritData extends EventEmitter{
                             }
                         }
 
-                        if (changes_counter) {
-                            this.emit('data_changed', pairs_change, changes_counter);
-                        }
+                        if (changes_counter) this.emit('data_changed', pairs_change, changes_counter);
                     }).catch(err => {
-                        console.error('Error in trit_data CheckChange');
+                        console.error('Error in trit_data.CheckChange');
                         console.trace(err);
                     })
                 } else {

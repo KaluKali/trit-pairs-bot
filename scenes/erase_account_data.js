@@ -35,11 +35,9 @@ const erase_account_data = function (reverse_markup, table_style, res) {
         (ctx) => {
             let buttons_opt;
             if (ctx.message.payload) buttons_opt = JSON.parse(ctx.message.payload);
-            else buttons.exit.action(ctx);
+            else return buttons.exit.action(ctx);
 
-            for (let k of Object.keys(buttons)){
-                if (buttons[k].text === buttons_opt.button)  buttons[k].action(ctx);
-            }
+            for (let k of Object.keys(buttons)) if (buttons[k].text === buttons_opt.button)  buttons[k].action(ctx);
         },
         (ctx) => {
             let buttons_opt;

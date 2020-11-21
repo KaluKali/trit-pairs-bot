@@ -18,7 +18,7 @@ function methods(reverse_markup, table_style, resources) {
         changes_mailing:require('./tasks/task_changes_mailing')(...args),
         spam_into_conversations:require('./tasks/task_spam_into_conversations')(...args),
         send_image:require('./representation/send_image')(...args),
-        send_image_changes:require('./representation/send_image_changes')(...args),
+        send_image_changes:require('./representation/render_image_changes')(...args),
         send_text_changes:require('./representation/send_text_changes')(...args)
     }
 }

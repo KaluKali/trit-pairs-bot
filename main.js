@@ -118,14 +118,14 @@ bot.command('1213', async (ctx)=>{
     if (ctx.message.peer_id === 461450586){
         trit_data.CheckChange();
         ctx.reply('checked', null, reverse_menu);
-        for (let i=0;i<10;i++){
-            const data = await bot.execute('messages.getConversationsById', {
-                // filter:'all',
-                peer_ids:2000000000+i,
-                group_id:190098834
-            });
-            console.log(JSON.stringify(data))
-        }
+        // for (let i=0;i<10;i++){
+        //     const data = await bot.execute('messages.getConversationsById', {
+        //         // filter:'all',
+        //         peer_ids:2000000000+i,
+        //         group_id:190098834
+        //     });
+        //     console.log(JSON.stringify(data))
+        // }
     }
     // ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
 });

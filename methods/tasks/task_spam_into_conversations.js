@@ -1,4 +1,4 @@
-const send_image_changes = require('../representation/send_image_changes');
+const send_image_changes = require('../representation/render_image_changes');
 const send_text_changes = require('../representation/send_text_changes');
 const saveImageIntoVk = require('../../tools/image_tools/save_image_into_vk');
 
@@ -10,7 +10,7 @@ async function task_mailing(bot, message, attachment) {
     if (message) sending_params.message = message;
     if (attachment) sending_params.attachment = attachment;
 
-    const TOTAL_CONV = 13;
+    const TOTAL_CONV = 13;// 2 - jojo
 
     for (let i = 1; i < TOTAL_CONV;i++){
         sending_params.peer_id+=1;
