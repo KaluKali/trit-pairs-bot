@@ -4,7 +4,7 @@ const render_image_changes = require('../representation/render_image_changes');
 const task_changes_mailing = (reverse_markup, table_style, resources) => {
     return async (data_changes,amount, bot)=>{
         const sql = `SELECT vk_id, user_group, notify_groups_c FROM ${process.env.DB_TABLE} WHERE notify AND notify_c AND notify_groups_c IS NOT NULL`;
-        return;
+
         resources.db.callback(sql, null,(err, users) => {
             if(err) return console.error(`task_changes_mailing db Error: ${err}`);
 

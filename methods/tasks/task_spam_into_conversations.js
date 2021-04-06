@@ -11,7 +11,7 @@ async function task_mailing(bot, message, attachment) {
     };
     // Для того, чтобы получить информацию о беседе с ключом доступа сообщества, у сообщества должны быть права администратора в беседе.
     // то есть без прав администратора информацию даже по getConversations не получить, однако слать сообщения можно
-    const TOTAL_CONV = 3;
+    const TOTAL_CONV = 13;
 
     for (let i = 1; i < TOTAL_CONV;i++){
         sending_params.peer_id+=1;
