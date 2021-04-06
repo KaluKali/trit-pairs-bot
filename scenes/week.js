@@ -8,14 +8,28 @@ const settings = (reverse_markup, table_style, resources) => {
 
     let weekdays = ServerTime.Weekdays();
     weekdays.shift();
+    weekdays.push('Таблица')
 
-    const buttons = weekdays.map(day=>({
+    const buttons = weekdays.map(day=>day !== 'Таблица' ? ({
         text:day,
         color:'primary',
         action: ctx => resources.db.userInfo(ctx.message.from_id,['user_group'])
             .then(([user_info])=>{
                 ctx.scene.leave();
                 return ctx_methods(reverse_markup, table_style, resources).pairs_day(ctx, {group: user_info.user_group, weekday: day});
+            })
+            .catch((err) => {
+                console.error(`Scene settings error: ${err}`);
+                ctx.scene.leave();
+                return ctx.scene.enter('group');
+            })
+    }) : ({
+        text:day,
+        color:'primary',
+        action: ctx => resources.db.userInfo(ctx.message.from_id,['user_group'])
+            .then(([user_info])=>{
+                ctx.scene.leave();
+                return ctx_methods(reverse_markup, table_style, resources).pairs_table(ctx);
             })
             .catch((err) => {
                 console.error(`Scene settings error: ${err}`);

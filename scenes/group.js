@@ -32,8 +32,8 @@ const group = function (reverse_markup, table_style, resources) {
 
             let sql;
             if (!user_info) {
-                sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group) VALUES($1,$2,$3,$4,$5)`;
-                const values = [ctx.message.from_id, 1, 1, 1, ctx.session.stud_group];
+                sql = `INSERT INTO ${process.env.DB_TABLE}(vk_id,notify_c,notify_e_d,notify,user_group,notify_groups_c) VALUES($1,$2,$3,$4,$5,$6)`;
+                const values = [ctx.message.from_id, 1, 1, 1, ctx.session.stud_group, [ctx.session.stud_group]];
                 resources.db.callback(sql, values, function (err) {
                     if (err) {
                         ctx.reply('Технические шоколадки, успешно устраняем.');

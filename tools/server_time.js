@@ -1,6 +1,10 @@
 // 0-6 where 0-"воскресение"
+
+/**
+ * обертка над логикой обработки воскресенья как день не учитывающийся в расписании
+**/
 const pairs_days = [
-    'воскресенье',
+    'воскресение',
     'понедельник',
     'вторник',
     'среда',
@@ -15,9 +19,10 @@ class ServerTime extends Date{
     }
     static isWeekday(day){
         if (typeof day != 'string') return new TypeError('Argument isValidWeekDay is string.');
-        return pairs_days.indexOf(day)!==-1;
+        else return pairs_days.indexOf(day)!==-1;
     }
     static Weekdays(){
+        // где-то в коде массив дней недели изменяется
         return pairs_days.slice();
     }
     static getWeekday(day){

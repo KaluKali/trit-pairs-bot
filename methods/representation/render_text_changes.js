@@ -1,4 +1,4 @@
-const sendTextImage = () => {
+const renderTextChanges = () => {
     return (data_changes)=>{
         let text_changes = `Изменилось расписание:\n\n`;
         for (let one_day in data_changes){
@@ -18,4 +18,4 @@ const sendTextImage = () => {
     }
 };
 
-module.exports = sendTextImage;
+module.exports = renderTextChanges;

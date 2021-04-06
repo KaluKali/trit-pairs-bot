@@ -5,12 +5,11 @@ if (process.platform === 'win32') gmSettings.appPath = 'C:\\Program Files\\Image
 const gm = require('gm').subClass(gmSettings);
 
 
-const sendImageChanges = () => {
-    return async (data_changes, group_filter=[], callback) => {
+const renderImageChanges = () => {
+    return async (data_changes, group_filter=[], cb) => {
         const TITLE_INDENT = 3;
 
         let week_markups = [];
-
 
         for (let one_day in data_changes) {
             if (Object.keys(data_changes[one_day].changes).length) {
@@ -21,17 +20,18 @@ const sendImageChanges = () => {
                         pangoMarkup += `\nГруппа ${group}\n\n`;
                         for (let pairIndex in data_changes[one_day].changes[group]){
                             const modify_pair = data_changes[one_day].changes[group][pairIndex];
-                            let stock = `${modify_pair.stock.name ? modify_pair.stock.name : '—'} ${modify_pair.stock.room ? `  каб. ${modify_pair.stock.room}` : '  каб. —'}`;
+                            let present = `${modify_pair.present.name ? modify_pair.present.name : '—'} ${modify_pair.present.room ? `  каб. ${modify_pair.present.room}` : '  каб. —'}`;
                             let modify = `${modify_pair.modified.name ? modify_pair.modified.name : '—'} ${modify_pair.modified.room ? `  каб. ${modify_pair.modified.room}` : '  каб. —'}`;
-                            pangoMarkup += `${pairIndex}. <span background="lightgreen">${stock}</span><s>${modify}</s>\n`
+                            // Досадный прикол нейминга, present - новый, modify - бывший
+                            pangoMarkup += `${pairIndex}. <span background="lightgreen">${present}</span><s>${modify}</s>\n`
                         }
                     });
-                } else return callback(null,null);
+                }
                 week_markups.push(pangoMarkup);
             }
         }
 
-        // выравнивание дней недели по вертикали
+        // выравнивание дней недели по вертикали отступами
         if (week_markups[0] && week_markups[3]) {
             let monday_indent = week_markups[0].split('\n').length-TITLE_INDENT;
             let thursday_indent = week_markups[3].split('\n').length-TITLE_INDENT;
@@ -54,15 +54,16 @@ const sendImageChanges = () => {
         }
         for (let i=0;i<week_markups.length;i++) week_markups[i] += '</span>';
 
-        gm().out('-kerning','1')
+        gm()
+            .out('-kerning','1')
             .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 3)).join('')}</markup>`)
             .out('-orient','top-right').out('+append')
             .out(`pango:<markup>${week_markups.filter((item, index)=>(index < 6 && index >= 3)).join('')}</markup>`)
             .out('-orient','top-right').out('+append')
             .borderColor('#FFFFFF')
             .border(20,20)
-            .toBuffer('JPEG',(err,buffer)=>callback(err,buffer));
+            .toBuffer('JPEG',cb);
     }
 };
 
-module.exports = sendImageChanges;
+module.exports = renderImageChanges;

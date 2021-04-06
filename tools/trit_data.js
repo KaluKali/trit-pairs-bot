@@ -1,6 +1,10 @@
 const api = require('./utils/api');
 const fs = require('fs');
 const EventEmitter = require('events');
+const _pairTools = require('../tools/message_tools/pair_tools');
+const table = require('text-table');
+const textToImage = require('../tools/image_tools/txt_table_to_image');
+const saveImageVK = require('../tools/image_tools/save_image_into_vk');
 
 const now_date = new Date();
 
@@ -8,20 +12,24 @@ const TIMETABLE_FILE = 'timetable.json';
 const DATA_FILE = 'data.json';
 const GROUPS_FILE = 'groups.json';
 
+const table_style = {align: ['l', 'l', 'l' ], hsep: '  '}
+
 function _isLargeDigit(i) {
     return i.toString().length > 1
 }
-/** ООЧЕНЬ ЖИРНЫЙ ОБЪЕКТ
-    хранит в себе всё расписание и при необходимости обновляет
-    сделано для быстродействия
-    вызывается в коде только 1 раз из main.js, дальше по коду раскидываются указатели по типу "resources.data"
-**/
+/** ООЧЕНЬ ЖИРНЫЙ КЛАСС
+ хранит в себе всё расписание и при необходимости обновляет
+ вызывается в коде только 1 раз из main.js, дальше по коду раскидываются указатели по типу "resources.data"
+ **/
 class TritData extends EventEmitter{
-    constructor() {
+    constructor(bot) {
         super();
+        this.bot = bot
         this.data = {};
         this.groups = [];
         this.timetable = [];
+        this.data_cache = {};
+
         console.log('Exemplar TritData created.')
     }
     static getDataPromise(){
@@ -33,6 +41,7 @@ class TritData extends EventEmitter{
     static getTimeTablePromise(){
         return api('https://trit.biz/rr/json_timetable.php');
     }
+
     getData(callback){
         if (Object.keys(this.data).length) return callback(this.data);
         else this._checkUpdateFile(DATA_FILE, callback);
@@ -148,7 +157,7 @@ class TritData extends EventEmitter{
             }
         });
     }
-    CheckChange(){
+    checkChange() {
         TritData.getDataPromise().then(data_inet=>{
             const pairs_change = {
                 'понедельник':{date:'', changes:{}},
@@ -159,30 +168,34 @@ class TritData extends EventEmitter{
                 'суббота':{date:'', changes:{}},
             };
             let changes_counter = 0;
+            let groups_changed = []
             this.getFSData(DATA_FILE,(data_fs,err)=>{
                 if (!err){
                     TritData.getGroupsPromise().then(response=>{
-                        for (let one_group of response){
+                        for (let one_group of response) {
                             for (let one_weekday of Object.keys(data_inet[one_group]['weekdays'])){
                                 let groups_pairs_day_obj = data_inet[one_group]['weekdays'][one_weekday];
                                 pairs_change[one_weekday].date = groups_pairs_day_obj.date;
                                 groups_pairs_day_obj.pairs.forEach((pair_inet, pair_index_inet)=>{
                                     let changes = data_fs.data[one_group]['weekdays'][one_weekday].pairs
                                         .some((pair_fs, i_fs)=>
-                                            (pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && pair_index_inet === i_fs) === true);
+                                            pair_inet.name === pair_fs.name && pair_inet.room === pair_fs.room && pair_index_inet === i_fs);
                                     if (!changes){
                                         changes_counter++;
-                                        if (typeof pairs_change[one_weekday].changes[one_group] === "undefined") pairs_change[one_weekday].changes[one_group] = {};
+                                        !groups_changed.find(group=>group===one_group) && groups_changed.push(one_group)
+
+                                        if (!pairs_change[one_weekday].changes[one_group]) pairs_change[one_weekday].changes[one_group] = {};
+
                                         pairs_change[one_weekday].changes[one_group][pair_index_inet+1]={
                                             'modified': data_fs.data[one_group]['weekdays'][one_weekday].pairs[pair_index_inet],
-                                            'stock': pair_inet
+                                            'present': pair_inet
                                         };
                                     }
                                 });
                             }
                         }
-
                         if (changes_counter) this.emit('data_changed', pairs_change, changes_counter);
+                        this._renderChanges(groups_changed)
                     }).catch(err => {
                         console.error('Error in trit_data.CheckChange');
                         console.trace(err);
@@ -195,6 +208,59 @@ class TritData extends EventEmitter{
             console.error(`Check pairs change error:`);
             console.trace(err)
         });
+    }
+
+    _renderWeekdayPromise(content) {
+        return Promise.all([
+            new Promise(resolve =>
+                textToImage(content, 0, (err, buffer) => {
+                    if (err) {
+                        console.error(`Error in method render images:`);
+                        console.error(err);
+                    } else saveImageVK(buffer, this.bot, (photo_data) => resolve(`photo${photo_data[0].owner_id}_${photo_data[0].id}`));
+                })),
+            new Promise(resolve =>
+                textToImage(content, 1, (err, buffer) => {
+                    if (err) {
+                        console.error(`Error in method render images:`);
+                        console.error(err);
+                    } else saveImageVK(buffer, this.bot, (photo_data) => resolve(`photo${photo_data[0].owner_id}_${photo_data[0].id}`));
+                }))
+        ])
+    }
+
+    async _renderChanges(groups) {
+        const pairTools = new _pairTools(this);
+        const data = await new Promise(resolve => this.getData(resolve))
+
+        for await (let one_group of groups) {
+            for await (let one_weekday of Object.keys(data[one_group]['weekdays'])) {
+                const arr_pairs = await new Promise(resolve => pairTools.arrayPairs(one_group, one_weekday, resolve));
+
+                let content = `Расписание группы ${one_group} на \n${one_weekday}\n\n${table(arr_pairs, table_style).toString()}`;
+
+                await this._renderWeekdayPromise(content).then(cached=>this.data_cache[one_group]['weekdays'][one_weekday]=cached)
+            }
+        }
+    }
+    async renderSchedule() {
+        const data = await new Promise(resolve => this.getData(resolve))
+        this.data_cache = Object.assign({},data);
+        const pairTools = new _pairTools(this);
+
+        for await (let one_group of Object.keys(this.data_cache)) {
+            console.log('Rendering group',one_group)
+            for await (let one_weekday of Object.keys(this.data_cache[one_group]['weekdays'])){
+                const arr_pairs = await new Promise(resolve => pairTools.arrayPairs(one_group, one_weekday, resolve));
+                if (typeof Array.isArray(this.data_cache[one_group]['weekdays'][one_weekday]) &&
+                    this.data_cache[one_group]['weekdays'][one_weekday].length) continue
+                else this.data_cache[one_group]['weekdays'][one_weekday]=[]
+
+                let content = `Расписание группы ${one_group} на \n${one_weekday}\n\n${table(arr_pairs, table_style).toString()}`;
+
+                await this._renderWeekdayPromise(content).then(cached=>this.data_cache[one_group]['weekdays'][one_weekday]=cached)
+            }
+        }
     }
 }
 

@@ -14,12 +14,12 @@ const ServerTime = require('./tools/server_time');
 const SqlDb = require('./tools/sql_data');
 const Message = require('./tools/message_tools/message');
 const levenshtein = require('./tools/message_tools/levenshtein');
-// tools
+// наследник Date, подробнее - в сурсе
 const server_time = new ServerTime();
-// ОООЧЕНЬ жирный класс, в коде его больше нигде лучше не вызывать, подробнее - в его файле
-const trit_data = new TritData();
+// ОООЧЕНЬ жирный класс, в коде его больше нигде лучше не вызывать, подробнее - в его сурсах
+const tritData = new TritData(bot);
 // Создает подключение к базе
-const sql_db = new SqlDb();
+const sqlDB = new SqlDb();
 // resource
 const reverse_menu = Markup.keyboard([
     Markup.button('Расписание на сегодня', 'positive'),
@@ -29,20 +29,20 @@ const reverse_menu = Markup.keyboard([
 ], { columns:2 }).oneTime();
 const ctx_scenes = require('./scenes/index');
 const ctx_methods = require('./methods/index');
-const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет'];
+const leven_list = ['расписание','найди','помощь','настроить','привет','меню','неделя', 'кабинет','таблица'];
 // jobs
 // prod 0 0 */6 ? * *
 // Every hour 0 0 * ? * *
 // Every second * * * ? * *
 schedule.scheduleJob('*/10 * * * 1-6', ()=>{
-    return ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).mailing(server_time.getWeekday(),'', bot);
+    return ctx_methods(reverse_menu, null, { data: tritData, db: sqlDB }).mailing(server_time.getWeekday(),'', bot);
 });
-
-// Обратите внимание: для того, чтобы получить информацию о беседе с ключом доступа сообщества, у сообщества должны быть права администратора в беседе.
-// то есть без прав администратора информацию даже по getConversations не получить
+// todo если запустить бота ровно в 30 минут (по времени системы) начнется коллапс и гонка где изменения расписания кофликтуют с обновлением расписания
+// шоб исправить надо добавить флаг первой проверки с начала запуска
+// todo для всех index сделать импорт es6
 schedule.scheduleJob('*/30 * * * *', ()=>{
     console.log('Checked pairs change.');
-    trit_data.CheckChange()
+    tritData.checkChange()
 });
 // restart
 schedule.scheduleJob('0 0 */12 ? * *', ()=>{
@@ -61,8 +61,8 @@ schedule.scheduleJob('0 0 */12 ? * *', ()=>{
 });
 // scenes
 bot.use(new Session().middleware());
-bot.use(new Stage(...ctx_scenes(reverse_menu, null, { data: trit_data, db: sql_db })).middleware());
-// event for processing an invitation to a conversation
+bot.use(new Stage(...ctx_scenes(reverse_menu, null, { data: tritData, db: sqlDB })).middleware());
+
 bot.event('message_new', (ctx,next) => {
     try {
         if (ctx.message.action.type === 'chat_invite_user'){
@@ -100,23 +100,26 @@ bot.command('неделя', (ctx)=>{
     ctx.scene.enter('week');
 });
 bot.command('найди', async (ctx)=>{
-    let msg = await Message.parseFind(ctx.message.text, {data: trit_data});
-    await ctx_methods(reverse_menu, null, { data: trit_data }).find_pairs(ctx,msg);
+    let msg = await Message.parseFind(ctx.message.text, {data: tritData});
+    await ctx_methods(reverse_menu, null, { data: tritData }).find_pairs(ctx,msg);
 });
 bot.command('кабинет', async (ctx)=>{
-    let msg = await Message.parseCabinet(ctx.message.text, {data: trit_data});
-    await ctx_methods(reverse_menu, null, { data: trit_data }).find_cabinet(ctx,msg);
+    let msg = await Message.parseCabinet(ctx.message.text, {data: tritData});
+    await ctx_methods(reverse_menu, null, { data: tritData }).find_cabinet(ctx,msg);
 });
 bot.command('настройки', (ctx) => {
     ctx.scene.enter('settings')
 });
 bot.command('расписание', async (ctx)=>{
-    let msg = await Message.parsePairsDay(ctx.message.text, {data: trit_data});
-    await ctx_methods(reverse_menu, null, { data: trit_data, db: sql_db }).pairs_day(ctx,msg);
+    let msg = await Message.parsePairsDay(ctx.message.text, {data: tritData});
+    await ctx_methods(reverse_menu, null, { data: tritData, db: sqlDB }).pairs_day(ctx,msg);
 });
-bot.command('1213', async (ctx)=>{
+bot.command('таблица', async (ctx)=>{
+    await ctx_methods(reverse_menu, null, {data: tritData, db: sqlDB}).pairs_table(ctx);
+});
+bot.command('2412', async (ctx)=>{
     if (ctx.message.peer_id === 461450586){
-        trit_data.CheckChange();
+        tritData.checkChange();
         ctx.reply('checked', null, reverse_menu);
         // for (let i=0;i<10;i++){
         //     const data = await bot.execute('messages.getConversationsById', {
@@ -132,21 +135,24 @@ bot.command('1213', async (ctx)=>{
 
 bot.on((ctx) => {
     if (ctx.message.peer_id < 2000000000){
-        // 0 в ctx.scene.enter фиксит определенный баг, не помню какой...
+        // step=0 в ctx.scene.enter фиксит определенный баг, не помню какой...
         ctx.scene.enter('unknown_command',0)
     }
 });
 
-trit_data.on('data_changed', async (data_changes, amount)=>{
+tritData.on('data_changed', async (data_changes, amount)=>{
     console.log(`New timetable! Changes amount: ${amount}.`);
     await ctx_methods(reverse_menu, null, {
-        data: trit_data,
-        db: sql_db
+        data: tritData,
+        db: sqlDB
     }).spam_into_conversations(data_changes, amount, bot);
-    await ctx_methods(reverse_menu, null, {data: trit_data, db: sql_db}).changes_mailing(data_changes, amount, bot);
-    trit_data.updateFSData('data.json', TritData.getDataPromise(), (res)=>trit_data.data=res);
+    await ctx_methods(reverse_menu, null, {data: tritData, db: sqlDB}).changes_mailing(data_changes, amount, bot);
+    tritData.updateFSData('data.json', TritData.getDataPromise(), (res)=>tritData.data=res);
 });
 bot.startPolling((err) => {
-    if (!err) console.log('Bot started');
-    else console.error(err);
+    if (!err) {
+        console.log('Bot started')
+        tritData.renderSchedule()
+    }
+    else console.trace(err);
 });
