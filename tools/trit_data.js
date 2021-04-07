@@ -11,6 +11,7 @@ const now_date = new Date();
 const TIMETABLE_FILE = 'timetable.json';
 const DATA_FILE = 'data.json';
 const GROUPS_FILE = 'groups.json';
+const CACHE_FILE = 'cache.json'
 
 const table_style = {align: ['l', 'l', 'l' ], hsep: '  '}
 
@@ -60,17 +61,17 @@ class TritData extends EventEmitter{
                 case DATA_FILE:
                     return this.updateFSData(file,TritData.getDataPromise(),(res)=>{
                         this.data = res;
-                        if (cb) cb(res);
+                        cb && cb(res);
                     });
                 case GROUPS_FILE:
                     return this.updateFSData(file,TritData.getGroupsPromise(),(res)=>{
                         this.groups = res;
-                        if (cb) cb(res);
+                        cb && cb(res);
                     });
                 case TIMETABLE_FILE:
                     return this.updateFSData(file,TritData.getTimeTablePromise(),(res)=>{
                         this.timetable = res;
-                        if (cb) cb(res);
+                        cb && cb(res);
                     });
             }
         }
@@ -90,13 +91,9 @@ class TritData extends EventEmitter{
                             this.timetable = data.data
                             break;
                     }
-                    if (cb) cb(data.data);
-                } else {
-                    upd(file)
-                }
-            } else {
-                upd(file)
-            }
+                    cb && cb(data.data);
+                } else upd(file)
+            } else upd(file)
         });
     }
     /**
@@ -120,20 +117,20 @@ class TritData extends EventEmitter{
                         .map(elem=>
                             `${_isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${_isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${_isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${_isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
                     fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
-                    if (cb) cb(timetable, null);
+                    cb && cb(timetable, null);
                     break;
                 default:
                     fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: response}),'utf-8');
-                    if (cb) cb(response, null);
+                    cb && cb(response, null);
                     break;
             }
         }).catch(err => {
             this.getFSData(name,(fs_data, err_fs)=>{
                 if (!err_fs){
-                    cb(fs_data.data,err);
+                    cb && cb(fs_data.data,err);
                 } else {
-                    cb(null, err_fs);
-                    console.error(err_fs);
+                    cb && cb(null, err_fs);
+                    console.error('Error updateFSData',err_fs);
                 }
             })
         });
@@ -146,13 +143,11 @@ class TritData extends EventEmitter{
                         callback(JSON.parse(data));
                     } else {
                         console.error(`getFSData: ${err}`);
-                        // вот тут лучше на null не править, сначала надо проверить нет ли где typeof === 'undefined'
                         callback(null,err)
                     }
                 });
             } else {
                 console.warn(`${name} отсутствует или занят.\n${err}`);
-                // вот тут лучше на null не править, сначала надо проверить нет ли где typeof === 'undefined'
                 callback(null,err);
             }
         });
@@ -194,7 +189,7 @@ class TritData extends EventEmitter{
                                 });
                             }
                         }
-                        if (changes_counter) this.emit('data_changed', pairs_change, changes_counter);
+                        changes_counter && this.emit('data_changed', pairs_change, changes_counter);
                         this._renderChanges(groups_changed)
                     }).catch(err => {
                         console.error('Error in trit_data.CheckChange');
@@ -245,13 +240,16 @@ class TritData extends EventEmitter{
     }
     async renderSchedule() {
         const data = await new Promise(resolve => this.getData(resolve))
-        this.data_cache = Object.assign({},data);
+        // deep copy
+        Object.keys(data).forEach(group=>this.data_cache[group]={weekdays:Object.assign({},data[group]['weekdays'])})
+
         const pairTools = new _pairTools(this);
 
         for await (let one_group of Object.keys(this.data_cache)) {
             console.log('Rendering group',one_group)
             for await (let one_weekday of Object.keys(this.data_cache[one_group]['weekdays'])){
                 const arr_pairs = await new Promise(resolve => pairTools.arrayPairs(one_group, one_weekday, resolve));
+
                 if (typeof Array.isArray(this.data_cache[one_group]['weekdays'][one_weekday]) &&
                     this.data_cache[one_group]['weekdays'][one_weekday].length) continue
                 else this.data_cache[one_group]['weekdays'][one_weekday]=[]

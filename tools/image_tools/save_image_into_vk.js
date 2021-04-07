@@ -25,9 +25,9 @@ const saveImageIntoVk = async (buffer, bot, cb)=>{
             };
             request(options, async (err, response, body) => {
                 if (err) console.log('Request err: ', err);
-                bot.execute('photos.saveMessagesPhoto', JSON.parse(body)).then(cb)
+                else bot.execute('photos.saveMessagesPhoto', JSON.parse(body)).then(cb).catch(err=>console.log('Save photo err',err))
             });
-        });
+        },(err)=>console.log('Get url for upload error', err));
 };
 
 module.exports = saveImageIntoVk;
