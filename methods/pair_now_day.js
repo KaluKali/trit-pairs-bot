@@ -1,15 +1,13 @@
 const ServerTime = require('../tools/server_time');
-const _pairTools = require('../tools/message_tools/pair_tools');
 // experiment tools
 const table = require('text-table');
 const sendTextImage = require('./representation/send_image');
+const textTableWeekday = require("../tools/message_tools/pair_tools");
 
 //
 const serverTime = new ServerTime();
 
 const pairs_now_day = (reverse_markup, table_style, resources) => {
-    const pairTools = new _pairTools(resources.data);
-
     return async (ctx, message) => { //send pairs to people
         if (!ctx || !message) return new Error('pairs_Day: Argument error');
 
@@ -30,10 +28,18 @@ const pairs_now_day = (reverse_markup, table_style, resources) => {
             ctx.reply('',resources.data.data_cache[group]['weekdays'][weekday][user_info.theme], reverse_markup)
         } else {
             console.log(`Cache miss ${group} ${weekday}`)
-            const arr_pairs = await new Promise(resolve => pairTools.arrayPairs(group, weekday, resolve));
 
-            let content = `Расписание группы ${group} на \n${weekday}\n\n${table(arr_pairs, table_style).toString()}`;
-            sendTextImage(reverse_markup)(content, ctx, user_info);
+            Promise.all([
+                new Promise(((resolve, reject) => resources.data.getData((data,err)=>err ? reject(err) : resolve(data)))),
+                new Promise(((resolve, reject) => resources.data.getTimeTable((data,err)=>err ? reject(err) : resolve(data))))
+            ]).then(async res=>{
+                let data = res[0];
+                let timetable = res[1];
+
+                let content =
+                    `Расписание группы ${group} на \n${weekday}\n\n${table(textTableWeekday(data[group]['weekdays'][weekday]['pairs'],timetable), table_style).toString()}`;
+                sendTextImage(reverse_markup)(content, ctx, user_info);
+            }).catch(()=>ctx.reply('Проблемы на сайте, скоро исправим.'))
         }
     }
 };

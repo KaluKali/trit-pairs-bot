@@ -1,10 +1,11 @@
 const api = require('./utils/api');
 const fs = require('fs');
 const EventEmitter = require('events');
-const _pairTools = require('../tools/message_tools/pair_tools');
 const table = require('text-table');
 const textToImage = require('../tools/image_tools/txt_table_to_image');
 const saveImageVK = require('../tools/image_tools/save_image_into_vk');
+const renderTableImage = require("../methods/representation/render_table_image");
+const textTableWeekday = require("./message_tools/pair_tools");
 
 const now_date = new Date();
 
@@ -32,6 +33,7 @@ class TritData extends EventEmitter{
         this.data_cache = {};
 
         console.log('Exemplar TritData created.')
+        this._checkUpdateFile(CACHE_FILE)
     }
     static getDataPromise(){
         return api('https://trit.biz/rr/json2.php');
@@ -73,6 +75,8 @@ class TritData extends EventEmitter{
                         this.timetable = res;
                         cb && cb(res);
                     });
+                case CACHE_FILE:
+                    return this.updateFSData(file,this.renderSchedule())
             }
         }
         this.getFSData(file,(data,err)=>{
@@ -89,6 +93,9 @@ class TritData extends EventEmitter{
                             break;
                         case TIMETABLE_FILE:
                             this.timetable = data.data
+                            break;
+                        case CACHE_FILE:
+                            this.data_cache = data.data
                             break;
                     }
                     cb && cb(data.data);
@@ -116,12 +123,12 @@ class TritData extends EventEmitter{
                     const timetable = response.filter((elem)=>elem.includes('lesson'))
                         .map(elem=>
                             `${_isLargeDigit(elem[1]) ? '' : '0'}${elem[1]}:${_isLargeDigit(elem[2]) ? '' : '0'}${elem[2]} - ${_isLargeDigit(elem[3]) ? '' : '0'}${elem[3]}:${_isLargeDigit(elem[4]) ? '' : '0'}${elem[4]}`);
-                    fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),'utf-8');
-                    cb && cb(timetable, null);
+                    fs.writeFile(name, JSON.stringify({date:now_date.toJSON(),data: timetable}),
+                        ()=>cb && cb(timetable, null));
                     break;
                 default:
-                    fs.writeFileSync(name, JSON.stringify({date:now_date.toJSON(),data: response}),'utf-8');
-                    cb && cb(response, null);
+                    fs.writeFile(name, JSON.stringify({date:now_date.toJSON(),data: response}),
+                        ()=>cb && cb(response, null));
                     break;
             }
         }).catch(err => {
@@ -147,7 +154,7 @@ class TritData extends EventEmitter{
                     }
                 });
             } else {
-                console.warn(`${name} отсутствует или занят.\n${err}`);
+                console.warn(`${name} отсутствует или занят.`,err);
                 callback(null,err);
             }
         });
@@ -163,7 +170,7 @@ class TritData extends EventEmitter{
                 'суббота':{date:'', changes:{}},
             };
             let changes_counter = 0;
-            let groups_changed = []
+            let groups_changed = [];
             this.getFSData(DATA_FILE,(data_fs,err)=>{
                 if (!err){
                     TritData.getGroupsPromise().then(response=>{
@@ -190,7 +197,7 @@ class TritData extends EventEmitter{
                             }
                         }
                         changes_counter && this.emit('data_changed', pairs_change, changes_counter);
-                        this._renderChanges(groups_changed)
+                        this.updateFSData(CACHE_FILE,this._renderChanges(groups_changed))
                     }).catch(err => {
                         console.error('Error in trit_data.CheckChange');
                         console.trace(err);
@@ -224,41 +231,56 @@ class TritData extends EventEmitter{
         ])
     }
 
+    _renderTableWeek(group_data) {
+        return Promise.all([
+            new Promise(resolve => renderTableImage(undefined,group_data,0,
+                (err,buffer)=>saveImageVK(buffer, this.bot, (photo_data) => resolve(`photo${photo_data[0].owner_id}_${photo_data[0].id}`)))),
+            new Promise(resolve => renderTableImage(undefined,group_data,1,
+                (err,buffer)=>saveImageVK(buffer, this.bot, (photo_data) => resolve(`photo${photo_data[0].owner_id}_${photo_data[0].id}`)))),
+        ])
+    }
+
     async _renderChanges(groups) {
-        const pairTools = new _pairTools(this);
         const data = await new Promise(resolve => this.getData(resolve))
 
         for await (let one_group of groups) {
             for await (let one_weekday of Object.keys(data[one_group]['weekdays'])) {
-                const arr_pairs = await new Promise(resolve => pairTools.arrayPairs(one_group, one_weekday, resolve));
+                const timetable = await new Promise(resolve => this.getTimeTable(data=>resolve(data)))
+                const arr_pairs = textTableWeekday(data[one_group]['weekdays'][one_weekday]['pairs'],timetable)
 
                 let content = `Расписание группы ${one_group} на \n${one_weekday}\n\n${table(arr_pairs, table_style).toString()}`;
 
                 await this._renderWeekdayPromise(content).then(cached=>this.data_cache[one_group]['weekdays'][one_weekday]=cached)
+                this.data_cache[one_group].table = await this._renderTableWeek(data[one_group])
             }
         }
+
+        return this.data_cache
     }
+
     async renderSchedule() {
         const data = await new Promise(resolve => this.getData(resolve))
         // deep copy
         Object.keys(data).forEach(group=>this.data_cache[group]={weekdays:Object.assign({},data[group]['weekdays'])})
 
-        const pairTools = new _pairTools(this);
-
         for await (let one_group of Object.keys(this.data_cache)) {
             console.log('Rendering group',one_group)
-            for await (let one_weekday of Object.keys(this.data_cache[one_group]['weekdays'])){
-                const arr_pairs = await new Promise(resolve => pairTools.arrayPairs(one_group, one_weekday, resolve));
-
+            this.data_cache[one_group].table = await this._renderTableWeek(data[one_group])
+            for await (let one_weekday of Object.keys(this.data_cache[one_group]['weekdays'])) {
                 if (typeof Array.isArray(this.data_cache[one_group]['weekdays'][one_weekday]) &&
                     this.data_cache[one_group]['weekdays'][one_weekday].length) continue
                 else this.data_cache[one_group]['weekdays'][one_weekday]=[]
+
+                const timetable = await new Promise(resolve => this.getTimeTable(data=>resolve(data)))
+                const arr_pairs = textTableWeekday(data[one_group]['weekdays'][one_weekday]['pairs'],timetable)
 
                 let content = `Расписание группы ${one_group} на \n${one_weekday}\n\n${table(arr_pairs, table_style).toString()}`;
 
                 await this._renderWeekdayPromise(content).then(cached=>this.data_cache[one_group]['weekdays'][one_weekday]=cached)
             }
         }
+
+        return this.data_cache
     }
 }
 

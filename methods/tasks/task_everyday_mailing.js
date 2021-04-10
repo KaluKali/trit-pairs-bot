@@ -1,11 +1,10 @@
 const table = require('text-table');
-const _pairTools = require('../../tools/message_tools/pair_tools');
 const textToImage = require('../../tools/image_tools/txt_table_to_image');
 const saveImageVK = require('../../tools/image_tools/save_image_into_vk');
+const textTableWeekday = require("../../tools/message_tools/pair_tools");
 
-const task_everyday_mailing = (reverse_markup, table_style, resources) => {
+const taskEverydayMailing = (reverse_markup, table_style, resources) => {
     const now_time = new Date();
-    const pairTools = new _pairTools(resources.data);
     return async (weekday, message, bot)=>{
         const sql = `SELECT vk_id, user_group, notify_groups, notify_time FROM ${process.env.DB_TABLE} WHERE notify AND notify_e_d AND notify_groups IS NOT NULL `;
         resources.db.callback(sql, null, (err, users) => {
@@ -14,7 +13,10 @@ const task_everyday_mailing = (reverse_markup, table_style, resources) => {
             const uniq_exec_groups = [...new Set(users.map(user=>[user.user_group, user.notify_groups]).flat(4))];
 
             uniq_exec_groups.forEach(async (group) => {
-                const arr_pairs = await new Promise(resolve => pairTools.arrayPairs(group, weekday, resolve));
+                const timetable = await new Promise(resolve => resources.data.getTimeTable(data=>resolve(data)))
+                const data = await new Promise(resolve => resources.data.getData(data=>resolve(data)))
+
+                const arr_pairs = textTableWeekday(data[group]['weekdays'][weekday]['pairs'],timetable)
 
                 const t = table(arr_pairs, table_style);
 
@@ -49,4 +51,4 @@ const task_everyday_mailing = (reverse_markup, table_style, resources) => {
     }
 };
 
-module.exports = task_everyday_mailing;
+module.exports = taskEverydayMailing;

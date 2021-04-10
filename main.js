@@ -40,7 +40,7 @@ schedule.scheduleJob('*/10 * * * 1-6', ()=>{
 // todo если запустить бота ровно в 30 минут (по времени системы) начнется коллапс и гонка где изменения расписания кофликтуют с обновлением расписания
 // шоб исправить надо добавить флаг первой проверки с начала запуска
 // todo для всех index сделать импорт es6
-schedule.scheduleJob('*/30 * * * *', ()=>{
+schedule.scheduleJob('*/30 7-20 * * *', ()=>{
     console.log('Checked pairs change.');
     tritData.checkChange()
 });
@@ -150,9 +150,6 @@ tritData.on('data_changed', async (data_changes, amount)=>{
     tritData.updateFSData('data.json', TritData.getDataPromise(), (res)=>tritData.data=res);
 });
 bot.startPolling((err) => {
-    if (!err) {
-        console.log('Bot started')
-        tritData.renderSchedule()
-    }
+    if (!err) console.log('Bot started')
     else console.trace(err);
 });
