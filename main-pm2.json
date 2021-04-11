@@ -5,14 +5,12 @@
   "env": {},
   "merge_logs": true,
   "autorestart": false,
-  "watch": false,
   "exec_mode": "fork",
   "instance_var": "NODE_APP_INSTANCE",
-  "pmx": true,
-  "automation": true,
+  "automation": false,
   "treekill": true,
   "windowsHide": true,
-  "ignore_watch": ["node_modules"],
+  "ignore_watch": ["node_modules","cache.json","data.json","groups.json"],
   "kill_retry_time": 100,
   "write": true
 }
