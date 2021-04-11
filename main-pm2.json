@@ -1,6 +1,6 @@
 {
   "script": "main.js",
-  "name": "trit-bot",
+  "name": "trit-pairs-bot",
   "namespace": "default",
   "env": {},
   "merge_logs": true,
@@ -10,6 +10,10 @@
   "automation": false,
   "treekill": true,
   "windowsHide": true,
+  "watch": false,
+  "watch_options": {
+    "followSymlinks": false
+  },
   "ignore_watch": ["node_modules","cache.json","data.json","groups.json"],
   "kill_retry_time": 100,
   "write": true
