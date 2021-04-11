@@ -35,19 +35,31 @@ class TritData extends EventEmitter{
         console.log('Exemplar TritData created.')
         this._checkUpdateFile(CACHE_FILE)
     }
-    static getDataPromise(){
+    static getDataPromise() {
         return api('https://trit.biz/rr/json2.php');
     }
-    static getGroupsPromise(){
+    static getGroupsPromise() {
         return api('https://trit.biz/rr/json.php');
     }
-    static getTimeTablePromise(){
+    static getTimeTablePromise() {
         return api('https://trit.biz/rr/json_timetable.php');
     }
 
     getData(callback){
         if (Object.keys(this.data).length) return callback(this.data);
         else this._checkUpdateFile(DATA_FILE, callback);
+    }
+    getCache(group,weekday,theme=0) {
+        if (group && weekday) {
+            if (Array.isArray(this.data_cache[group]['weekdays'][weekday]) && this.data_cache[group]['weekdays'][weekday][theme]) {
+                return this.data_cache[group]['weekdays'][weekday][theme]
+            }
+        } else {
+            if (Array.isArray(this.data_cache[group]['weekdays'][weekday]) && this.data_cache[group]['table'] &&
+                this.data_cache[group]['table'][theme]) {
+                return this.data_cache[group]['weekdays'][weekday]['table'][theme]
+            }
+        }
     }
     getGroups(callback){
         if (this.groups.length) return callback(this.groups);
@@ -82,7 +94,7 @@ class TritData extends EventEmitter{
         this.getFSData(file,(data,err)=>{
             if (!err) {
                 const back_date = new Date(data.date);
-                if (back_date.getDate() === now_date.getDate()){
+                if (back_date.getDate() === now_date.getDate()) {
                     // кэшируем данные
                     switch (file) {
                         case DATA_FILE:
@@ -95,7 +107,7 @@ class TritData extends EventEmitter{
                             this.timetable = data.data
                             break;
                         case CACHE_FILE:
-                            this.data_cache = data.data
+                            this.data_cache = data.data;
                             break;
                     }
                     cb && cb(data.data);
@@ -197,6 +209,7 @@ class TritData extends EventEmitter{
                             }
                         }
                         changes_counter && this.emit('data_changed', pairs_change, changes_counter);
+                        this.updateFSData('data.json', TritData.getDataPromise(), (res)=>this.data=res);
                         this.updateFSData(CACHE_FILE,this._renderChanges(groups_changed))
                     }).catch(err => {
                         console.error('Error in trit_data.CheckChange');
@@ -265,7 +278,9 @@ class TritData extends EventEmitter{
 
         for await (let one_group of Object.keys(this.data_cache)) {
             console.log('Rendering group',one_group)
+
             this.data_cache[one_group].table = await this._renderTableWeek(data[one_group])
+
             for await (let one_weekday of Object.keys(this.data_cache[one_group]['weekdays'])) {
                 if (typeof Array.isArray(this.data_cache[one_group]['weekdays'][one_weekday]) &&
                     this.data_cache[one_group]['weekdays'][one_weekday].length) continue

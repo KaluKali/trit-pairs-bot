@@ -14,7 +14,7 @@ const pairs_now_day = (reverse_markup, table_style, resources) => {
         const [user_info] = await resources.db.userInfo(ctx.message.from_id);
 
         if (message.group === -1){
-            if (!user_info){
+            if (!user_info || !user_info.user_group){
                 return ctx.scene.enter('group');
             } else {
                 message.group = user_info.user_group;
@@ -23,9 +23,9 @@ const pairs_now_day = (reverse_markup, table_style, resources) => {
         const weekday = message.weekday !== "" ? message.weekday : serverTime.getWeekday();
         const group = message.group;
 
-        if (Array.isArray(resources.data.data_cache[group]['weekdays'][weekday]) &&
-            typeof resources.data.data_cache[group]['weekdays'][weekday][user_info.theme] === 'string') {
-            ctx.reply('',resources.data.data_cache[group]['weekdays'][weekday][user_info.theme], reverse_markup)
+        let cache = resources.data.getCache(group,weekday,user_info.theme)
+        if (cache) {
+            ctx.reply('',cache, reverse_markup)
         } else {
             console.log(`Cache miss ${group} ${weekday}`)
 

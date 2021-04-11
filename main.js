@@ -39,7 +39,6 @@ schedule.scheduleJob('*/10 * * * 1-6', ()=>{
 });
 // todo если запустить бота ровно в 30 минут (по времени системы) начнется коллапс и гонка где изменения расписания кофликтуют с обновлением расписания
 // шоб исправить надо добавить флаг первой проверки с начала запуска
-// todo для всех index сделать импорт es6
 schedule.scheduleJob('*/30 7-20 * * *', ()=>{
     console.log('Checked pairs change.');
     tritData.checkChange()
@@ -147,7 +146,6 @@ tritData.on('data_changed', async (data_changes, amount)=>{
         db: sqlDB
     }).spam_into_conversations(data_changes, amount, bot);
     await ctx_methods(reverse_menu, null, {data: tritData, db: sqlDB}).changes_mailing(data_changes, amount, bot);
-    tritData.updateFSData('data.json', TritData.getDataPromise(), (res)=>tritData.data=res);
 });
 bot.startPolling((err) => {
     if (!err) console.log('Bot started')
